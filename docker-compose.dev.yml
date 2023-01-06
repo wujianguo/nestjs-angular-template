@@ -1,0 +1,38 @@
+version: "3.9"
+
+# docker-compose -f docker-compose.dev.yml -p="nestjs-angular" up
+services:
+  nestjs-angular-server-backend:
+    image: nestjs-angular-dev:latest
+    build:
+      context: .
+      target: development
+    command: sh -c "npm install && npm run start:dev backend"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./server:/usr/src/app
+
+  nestjs-angular-server-frontend:
+    image: nestjs-angular-dev:latest
+    build:
+      context: .
+      target: development
+    command: sh -c "npm install && npm run start:dev frontend"
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./server:/usr/src/app
+
+  nestjs-angular-web:
+    image: nestjs-angular-dev:latest
+    build:
+      context: .
+      target: development
+    command: sh -c "ng serve --host=0.0.0.0 --disable-host-check=true"
+    ports:
+      - "4200:4200"
+    depends_on:
+      - nestjs-angular-server-backend
+    volumes:
+      - ./web:/usr/src/app
