@@ -3,12 +3,16 @@ version: "3.9"
 services:
   nestjs-angular-server-backend:
     image: nestjs-angular:latest
+    build: .
+    pull_policy: never
     entrypoint: ["node", "dist/apps/backend/main.js"]
     ports:
       - "3000:3000"
 
   nestjs-angular-server-frontend:
     image: nestjs-angular:latest
+    build: .
+    pull_policy: never
     entrypoint: ["node", "dist/apps/frontend/main.js"]
     ports:
       - "3001:3001"

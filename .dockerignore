@@ -1,0 +1,6 @@
+Dockerfile
+.dockerignore
+web/node_modules
+server/node_modules
+web/dist
+server/dist
