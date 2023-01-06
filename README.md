@@ -11,7 +11,7 @@ Nestjs + Angular with backend & frontend api.
 - [Angular 15+](https://angular.io/)
 - [NestJS 9+](https://nestjs.com/)
 
-## Develop
+## Development
 
 ```sh
 docker-compose -f docker-compose.dev.yml up
@@ -20,7 +20,7 @@ docker-compose -f docker-compose.dev.yml up
 ## Production
 
 ```sh
-docker build  . -t nestjs-angular
+docker build . -t nestjs-angular
 docker-compose up -d
 ```
 
