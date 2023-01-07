@@ -6,7 +6,7 @@ export class BackendController {
   constructor(private readonly backendService: BackendService) {}
 
   @Get()
-  getHello(): string {
-    return this.backendService.getHello();
+  getHello(): { [key: string]: any } {
+    return { data: this.backendService.getHello() };
   }
 }

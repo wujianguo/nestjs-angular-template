@@ -20,7 +20,6 @@ docker-compose -f docker-compose.dev.yml up
 ## Production
 
 ```sh
-docker build . -t nestjs-angular
 docker-compose up -d
 ```
 

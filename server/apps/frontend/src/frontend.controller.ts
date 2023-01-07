@@ -6,7 +6,7 @@ export class FrontendController {
   constructor(private readonly frontendService: FrontendService) {}
 
   @Get()
-  getHello(): string {
-    return this.frontendService.getHello();
+  getHello(): { [key: string]: any } {
+    return { data: this.frontendService.getHello() };
   }
 }

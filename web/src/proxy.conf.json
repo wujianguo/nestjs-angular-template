@@ -1,0 +1,6 @@
+{
+  "/api": {
+    "target": "http://nestjs-angular-server-backend:3000",
+    "secure": false
+  }
+}
