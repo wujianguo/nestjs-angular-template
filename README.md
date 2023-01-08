@@ -4,7 +4,7 @@
 [![NestJS9](https://img.shields.io/badge/NestJS-9-brightgreen)](https://nestjs.com/)
 [![MIT](https://img.shields.io/packagist/l/doctrine/orm.svg)](LICENSE)
 
-Nestjs + Angular with backend & frontend api.
+Nestjs + Angular template.
 
 ## Features
 

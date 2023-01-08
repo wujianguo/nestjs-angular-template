@@ -1,4 +1,5 @@
 # https://www.tomray.dev/nestjs-docker-production
+# docker build . -t nestjs-angular
 ###################
 # BUILD FOR LOCAL DEVELOPMENT
 ###################
@@ -39,11 +40,8 @@ FROM node:18-alpine As prod
 # Copy the bundled code from the build stage to the production image
 COPY --chown=node:node --from=build /usr/src/app/server/node_modules ./node_modules
 COPY --chown=node:node --from=build /usr/src/app/server/dist ./dist
-COPY --chown=node:node --from=build /usr/src/app/web/dist/nestjs-angular ./dist/apps/backend/web
+COPY --chown=node:node --from=build /usr/src/app/web/dist/nestjs-angular ./dist/apps/nestjs-angular/web
 
-EXPOSE 3000 3001
+EXPOSE 3000
 # Start the server using the production build
-# CMD [ "node", "dist/apps/backend/main.js" ]
-# CMD [ "node", "dist/apps/frontend/main.js" ]
-
-# docker build . -t nestjs-angular
+CMD [ "node", "dist/apps/nestjs-angular/main.js" ]

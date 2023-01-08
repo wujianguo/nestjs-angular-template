@@ -14,7 +14,7 @@ export class UserService {
     const url = '/api';
     return this.http.get(url)
       .pipe(map(res => {
-        return res.toString();
+        return (res as {[key: string]: any })['data'].toString();
       }),
     );
   }

@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { BackendController } from './backend.controller';
-import { BackendService } from './backend.service';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -12,7 +11,6 @@ import { BackendService } from './backend.service';
       exclude: ['/api*'],
     }),
   ],
-  controllers: [BackendController],
-  providers: [BackendService],
+  controllers: [AppController],
 })
-export class BackendModule {}
+export class AppModule {}
