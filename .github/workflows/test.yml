@@ -35,7 +35,7 @@ jobs:
         npm ci
     - name: Web - Run the tests
       working-directory: web
-      run: ng test
+      run: ng test --no-watch --code-coverage
 
     - name: Upload server coverage to Codecov
       uses: codecov/codecov-action@v3
