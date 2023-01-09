@@ -30,7 +30,9 @@ jobs:
 
     - name: Web - Install Dependencies
       working-directory: web
-      run: npm ci
+      run: |
+        npm install -g @angular/cli
+        npm ci
     - name: Web - Run the tests
       working-directory: web
       run: ng test
