@@ -24,9 +24,14 @@ jobs:
     - name: Server - Install Dependencies
       working-directory: server
       run: npm ci
-    - name: Server - Run the tests
+    - name: Server - Run the app tests
       working-directory: server
-      run: npm run test:e2e:cov
+      run: |
+        echo "common:\n  debug: true\ndb:\n  sqlite:\n    database:':memory:'" > server/apps/nestjs-angular/src/config/config.test.yaml
+        CONFIG_FILE=config.test.yaml npm run test:e2e:cov
+    - name: Server - Run the user tests
+      working-directory: server
+      run: npm run test:e2e:user:cov
 
     - name: Web - Install Dependencies
       working-directory: web
@@ -37,11 +42,16 @@ jobs:
       working-directory: web
       run: ng test --no-watch --code-coverage
 
-    - name: Upload server coverage to Codecov
+    - name: Upload server app coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
         files: ./server/apps/nestjs-angular/test/coverage/coverage-final.json
-        flags: server
+        flags: server-app
+    - name: Upload server user coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./server/libs/user/test/coverage/coverage-final.json
+        flags: server-user
     - name: Upload web coverage to Codecov
       uses: codecov/codecov-action@v3
       with:

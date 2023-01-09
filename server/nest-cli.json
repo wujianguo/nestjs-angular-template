@@ -5,7 +5,8 @@
   "compilerOptions": {
     "deleteOutDir": true,
     "webpack": true,
-    "tsConfigPath": "apps/nestjs-angular/tsconfig.app.json"
+    "tsConfigPath": "apps/nestjs-angular/tsconfig.app.json",
+    "assets": ["**/*.yaml"]
   },
   "monorepo": true,
   "root": "apps/nestjs-angular",
@@ -17,6 +18,24 @@
       "sourceRoot": "apps/nestjs-angular/src",
       "compilerOptions": {
         "tsConfigPath": "apps/nestjs-angular/tsconfig.app.json"
+      }
+    },
+    "user": {
+      "type": "library",
+      "root": "libs/user",
+      "entryFile": "index",
+      "sourceRoot": "libs/user/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/user/tsconfig.lib.json"
+      }
+    },
+    "message": {
+      "type": "library",
+      "root": "libs/message",
+      "entryFile": "index",
+      "sourceRoot": "libs/message/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/message/tsconfig.lib.json"
       }
     }
   }

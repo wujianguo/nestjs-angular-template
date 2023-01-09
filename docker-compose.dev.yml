@@ -1,6 +1,6 @@
 version: "3.9"
 
-# docker-compose -f docker-compose.dev.yml -p="nestjs-angular" up
+# docker-compose -f docker-compose.dev.yml -p="nestjs-angular" --profile dev up
 services:
   nestjs-angular-server:
     image: nestjs-angular-dev:latest
@@ -9,6 +9,9 @@ services:
       target: development
     pull_policy: never
     command: sh -c "npm install && npm run start:dev nestjs-angular"
+    profiles:
+      - dev
+      - server
     ports:
       - "3000:3000"
     volumes:
@@ -21,9 +24,35 @@ services:
       target: development
     pull_policy: never
     command: sh -c "npm install && ng serve --host=0.0.0.0 --disable-host-check=true"
+    profiles:
+      - dev
     ports:
       - "4200:4200"
     depends_on:
       - nestjs-angular-server
     volumes:
       - ./web:/usr/src/app
+
+  nestjs-angular-server-test-app:
+    image: nestjs-angular-dev:latest
+    build:
+      context: .
+      target: development
+    pull_policy: never
+    command: sh -c "CONFIG_FILE=config.yaml npm run test:e2e:cov"
+    profiles:
+      - test-app
+    volumes:
+      - ./server:/usr/src/app
+
+  nestjs-angular-server-test-user:
+    image: nestjs-angular-dev:latest
+    build:
+      context: .
+      target: development
+    pull_policy: never
+    command: sh -c "npm run test:e2e:user:cov"
+    profiles:
+      - test-user
+    volumes:
+      - ./server:/usr/src/app

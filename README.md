@@ -17,8 +17,10 @@ Nestjs + Angular template.
 
 ## Development
 
+Replace "nestjs-angular" with your project name.
+
 ```sh
-docker-compose -f docker-compose.dev.yml up
+docker-compose -f docker-compose.dev.yml -p="nestjs-angular" --profile dev up
 ```
 
 ## Production

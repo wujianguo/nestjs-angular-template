@@ -3,21 +3,20 @@
   "moduleNameMapper": {
     "^@/(.*)$": "<rootDir>/src/$1",
     "^@test/(.*)$": "<rootDir>/test/$1",
-    "@app/user": "<rootDir>/../../libs/user/src",
-    "@app/user/*": "<rootDir>/../../libs/user/src/*",
     "@app/message": "<rootDir>/../../libs/message/src",
     "@app/message/*": "<rootDir>/../../libs/message/src/*"
   },
   "rootDir": "..",
   "collectCoverageFrom": [
     "src/**/*.(t|j)s",
-    "!src/main.ts"
+    "!src/index.ts",
+    "!test/**"
   ],
   "coverageDirectory": "./test/coverage",
   "reporters": [
     "default",
     ["jest-html-reporters", {
-      "publicPath": "./apps/nestjs-angular/test/report",
+      "publicPath": "./libs/user/test/report",
       "filename": "index.html"
     }]
   ],

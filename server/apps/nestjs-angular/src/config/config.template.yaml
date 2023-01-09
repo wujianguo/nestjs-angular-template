@@ -1,0 +1,34 @@
+common:
+  debug: true
+
+db:
+  sqlite:
+    database: ':memory:'
+
+auth:
+  email:
+    enable: true
+    domain: ''
+  phone:
+    enable: true
+  socials:
+    - type: 'github'
+      client_id: ''
+      client_secret: ''
+    - type: 'gitlab'
+      client_id: ''
+      client_secret: ''
+      gitlab_url: ''
+    - type: 'slack'
+      client_id: ''
+      client_secret: ''
+    - type: 'feishu'
+      app_id: ''
+      app_secret: ''
+    - type: 'dingtalk'
+      app_key: ''
+      app_secret: ''
+    - type: 'wecom'
+      agent_id: ''
+      corp_id: ''
+      app_secret: ''
