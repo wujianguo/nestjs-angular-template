@@ -1,5 +1,6 @@
 # nestjs-angular-template
 
+[![codecov](https://codecov.io/gh/wujianguo/nestjs-angular-template/branch/main/graph/badge.svg?token=JbvDW07tsh)](https://codecov.io/gh/wujianguo/nestjs-angular-template)
 [![Angular15](https://img.shields.io/badge/Angular-15-brightgreen)](https://angular.io/)
 [![NestJS9](https://img.shields.io/badge/NestJS-9-brightgreen)](https://nestjs.com/)
 [![MIT](https://img.shields.io/packagist/l/doctrine/orm.svg)](LICENSE)

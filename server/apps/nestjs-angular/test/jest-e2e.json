@@ -1,6 +1,22 @@
 {
   "moduleFileExtensions": ["js", "json", "ts"],
-  "rootDir": ".",
+  "moduleNameMapper": {
+    "^@/(.*)$": "<rootDir>/src/$1",
+    "^@test/(.*)$": "<rootDir>/test/$1"
+  },
+  "rootDir": "..",
+  "collectCoverageFrom": [
+    "src/**/*.(t|j)s",
+    "!src/main.ts"
+  ],
+  "coverageDirectory": "./test/coverage",
+  "reporters": [
+    "default",
+    ["jest-html-reporters", {
+      "publicPath": "./apps/nestjs-angular/test/report",
+      "filename": "index.html"
+    }]
+  ],
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "transform": {
