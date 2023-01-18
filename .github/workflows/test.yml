@@ -31,7 +31,7 @@ jobs:
     - name: Server - Run the app tests
       working-directory: server
       run: |
-        echo "common:\n  debug: true\ndb:\n  sqlite:\n    database: ':memory:'" > apps/nestjs-angular/src/config/config.test.yaml
+        echo -e "common:\n  debug: true\ndb:\n  sqlite:\n    database: ':memory:'" > apps/nestjs-angular/src/config/config.test.yaml
         CONFIG_FILE=config.test.yaml npm run test:e2e:cov
     - name: Server - Run the user tests
       working-directory: server
