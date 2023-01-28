@@ -8,7 +8,7 @@ class EmailAuthConfig {
   domain: string;
 }
 
-class PhoneAuthConfig {
+class SmsAuthConfig {
   @ApiProperty()
   enable: boolean;
 }
@@ -41,7 +41,7 @@ export class AuthConfig {
   email: EmailAuthConfig;
 
   @ApiProperty()
-  phone: PhoneAuthConfig;
+  sms: SmsAuthConfig;
 
   @ApiProperty({ type: [SocialAuthConfig] })
   socials: SocialAuthConfig[];
@@ -56,20 +56,23 @@ export class AdminAuthConfig {
   email: EmailAuthConfig;
 
   @ApiProperty()
-  phone: PhoneAuthConfig;
+  sms: SmsAuthConfig;
 
   @ApiProperty({ type: [SocialAuthConfig] })
   socials: AdminSocialAuthConfig[];
 
-  /**
-   * unit: minutes
-   */
+  @ApiProperty()
+  sendLimitTime: number;
+
   @ApiProperty()
   codeExpireTime: number;
 
-  /**
-   * unit: minutes
-   */
   @ApiProperty()
   signupExpireTime: number;
+
+  @ApiProperty()
+  codeVerifyMaxCount: number;
+
+  @ApiProperty()
+  securityKey: string;
 }

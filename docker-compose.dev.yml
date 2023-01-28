@@ -2,7 +2,7 @@ version: "3.9"
 
 # docker-compose -f docker-compose.dev.yml -p="nestjs-angular" --profile dev up
 services:
-  nestjs-angular-server:
+  server:
     image: nestjs-angular-dev:latest
     build:
       context: .
@@ -17,7 +17,7 @@ services:
     volumes:
       - ./server:/usr/src/app
 
-  nestjs-angular-web:
+  web:
     image: nestjs-angular-dev:latest
     build:
       context: .
@@ -33,7 +33,7 @@ services:
     volumes:
       - ./web:/usr/src/app
 
-  nestjs-angular-server-test-app:
+  server-test-app:
     image: nestjs-angular-dev:latest
     build:
       context: .
@@ -45,7 +45,7 @@ services:
     volumes:
       - ./server:/usr/src/app
 
-  nestjs-angular-server-test-user:
+  server-test-user:
     image: nestjs-angular-dev:latest
     build:
       context: .

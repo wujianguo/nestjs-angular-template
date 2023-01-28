@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  nestjs-angular-server:
+  server:
     # image: nestjs-angular:latest
     build: .
     # pull_policy: never

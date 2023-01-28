@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { SendEmailCodeRequest, VerifyCodeRequest } from '../../src/dto/mfa.dto';
+import { SendEmailCodeRequest, SendSmsCodeRequest, VerifyCodeRequest } from '../../src/dto/mfa.dto';
 import { SignupCompleteRequest } from '../../src/dto/signup.dto';
 
 export class UserClient {
@@ -32,6 +32,10 @@ export class UserClient {
 
   signupEmailSend(body: SendEmailCodeRequest) {
     return this.post('auth/signup/email/send', {}, body);
+  }
+
+  signupSmsSend(body: SendSmsCodeRequest) {
+    return this.post('auth/signup/sms/send', {}, body);
   }
 
   signupVerify(body: VerifyCodeRequest) {

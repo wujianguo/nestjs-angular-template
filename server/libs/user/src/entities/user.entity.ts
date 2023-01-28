@@ -10,6 +10,7 @@ import {
 import { LoginRecord } from './login-record.entity';
 import { SocialAccount } from './social-account.entity';
 
+// todo: add index
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -18,22 +19,37 @@ export class User {
   @Column({ unique: true })
   username: string;
 
-  // @Column({ unique: true })
-  email: string;
-
-  // @Column({ unique: true })
-  phone: string;
-
   @Column()
+  iv: string;
+
+  @Column({ default: '' })
+  desensitizedEmail: string;
+
+  @Column({ default: '' })
+  desensitizedPhoneNumber: string;
+
+  @Column({ default: '' })
+  hashedEmail: string;
+
+  @Column({ default: '' })
+  hashedPhoneNumber: string;
+
+  @Column({ default: '' })
+  encryptedEmail: string;
+
+  @Column({ default: '' })
+  encryptedPhoneNumber: string;
+
+  @Column({ default: '' })
   password: string;
 
-  @Column()
+  @Column({ default: '' })
   avatar: string;
 
-  @Column()
+  @Column({ default: '' })
   firstName: string;
 
-  @Column()
+  @Column({ default: '' })
   lastName: string;
 
   @OneToMany(() => LoginRecord, (loginRecord) => loginRecord.user)

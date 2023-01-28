@@ -1,8 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { PartialType } from '@nestjs/mapped-types';
 import { User } from '../entities/user.entity';
+import { IsAlphanumeric, IsNotEmpty, IsString, Length } from 'class-validator';
 
 export class UserProfileDto {
+  @IsString()
+  @IsNotEmpty()
+  @Length(4, 20)
+  @IsAlphanumeric('en-US', { message: 'username contains only letters and numbers' })
   @ApiProperty()
   username: string;
 
@@ -23,7 +28,7 @@ export class UserResponse extends UserProfileDto {
   email?: string;
 
   @ApiProperty({ description: 'Desensitized phone number', required: false })
-  phone?: string;
+  phoneNumber?: string;
 }
 
 export class AuthenticatedUserResponse extends UserResponse {
@@ -34,6 +39,11 @@ export class AuthenticatedUserResponse extends UserResponse {
 export function mapUser(entity: User): UserResponse {
   return {
     username: entity.username,
+    firstName: entity.firstName,
+    lastName: entity.lastName,
+    avatar: entity.avatar,
+    email: entity.desensitizedEmail,
+    phoneNumber: entity.desensitizedPhoneNumber,
   };
 }
 
@@ -41,5 +51,10 @@ export function mapAuthUser(token: string, entity: User): AuthenticatedUserRespo
   return {
     token: token,
     username: entity.username,
+    firstName: entity.firstName,
+    lastName: entity.lastName,
+    avatar: entity.avatar,
+    email: entity.desensitizedEmail,
+    phoneNumber: entity.desensitizedPhoneNumber,
   };
 }

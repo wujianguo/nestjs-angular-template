@@ -6,11 +6,14 @@ export const parseConfig = (conf: Record<string, any>): AdminAuthConfig => {
       enable: true,
       domain: '',
     },
-    phone: {
+    sms: {
       enable: true,
     },
     socials: [],
+    sendLimitTime: 60,
     codeExpireTime: 60,
     signupExpireTime: 60,
+    codeVerifyMaxCount: 3,
+    securityKey: '902hshqyjcoh5tyap2lx5uttt8m80tvg',
   };
 };

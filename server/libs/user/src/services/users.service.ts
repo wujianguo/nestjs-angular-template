@@ -1,31 +1,110 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt';
+import { DataSource, FindOptionsWhere, Repository } from 'typeorm';
 import { SignupProfileDto } from '../dto/signup.dto';
 import { User } from '../entities/user.entity';
+import { SecurityService } from './security.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private securityService: SecurityService,
+    private dataSource: DataSource,
   ) {}
 
-  async create(profile: SignupProfileDto): Promise<User> {
+  private where(login: string): FindOptionsWhere<User> {
+    if (login.indexOf('@') >= 0) {
+      return { hashedEmail: this.securityService.hmac(login) };
+    } else if (login.length > 0 && login[0] === '+') {
+      return { hashedPhoneNumber: this.securityService.hmac(login) };
+    } else {
+      return { username: login };
+    }
+  }
+
+  private desensitizeEmail(email: string): string {
+    const index = email.lastIndexOf('@');
+    if (index > 4) {
+      return email.substring(0, index - 4) + '****' + email.substring(index);
+    } else if (index > 0) {
+      return email.substring(0, index - 1) + '*' + email.substring(index);
+    }
+    return email;
+  }
+
+  private desensitizePhoneNumber(phoneNumber: string): string {
+    const len = phoneNumber.length;
+    if (len > 4) {
+      return phoneNumber.substring(0, len - 8 > 0 ? len - 8 : 2) + '****' + phoneNumber.substring(len - 4);
+    }
+    return phoneNumber;
+  }
+
+  usernameExistsException(): BadRequestException {
+    return new BadRequestException('username already exists', 'UsernameExists');
+  }
+
+  emailExistsException(): BadRequestException {
+    return new BadRequestException('email already exists', 'EmailExists');
+  }
+
+  phoneNumberExistsException(): BadRequestException {
+    return new BadRequestException('phone number already exists', 'PhoneNumberExists');
+  }
+
+  async create(profile: SignupProfileDto, email?: string, phoneNumber?: string): Promise<User> {
+    const exist1 = await this.usersRepository.exist({ where: { username: profile.username } });
+    if (exist1) {
+      throw this.usernameExistsException();
+    }
+
     const entity = new User();
     entity.username = profile.username;
     entity.firstName = profile.firstName;
     entity.lastName = profile.lastName;
+    let key = '';
     if (profile.password) {
-      entity.password = await bcrypt.hash(profile.password, 10);
+      entity.password = await this.securityService.bcryptHash(profile.password);
+      key = entity.password.substring(10, 26);
     }
-    const record = this.usersRepository.create(entity);
-    const user = await this.usersRepository.save(record);
+    const iv = this.securityService.randomBytes();
+    entity.iv = iv.toString('hex');
+    const where: FindOptionsWhere<User>[] = [{ username: entity.username }];
+    let exception: BadRequestException;
+    if (email) {
+      entity.desensitizedEmail = this.desensitizeEmail(email);
+      entity.encryptedEmail = await this.securityService.encrypt(email, key, iv);
+      entity.hashedEmail = this.securityService.hmac(email);
+      where.push({ hashedEmail: entity.hashedEmail });
+      exception = this.emailExistsException();
+    }
+    if (phoneNumber) {
+      entity.desensitizedEmail = this.desensitizePhoneNumber(phoneNumber);
+      entity.encryptedPhoneNumber = await this.securityService.encrypt(phoneNumber, key, iv);
+      entity.hashedPhoneNumber = this.securityService.hmac(phoneNumber);
+      where.push({ hashedPhoneNumber: entity.hashedPhoneNumber });
+      exception = this.phoneNumberExistsException();
+    }
+
+    let user: User;
+    await this.dataSource.transaction(async (transactionalEntityManager) => {
+      const exist2 = await transactionalEntityManager.exists(User, { where });
+      if (exist2) {
+        throw exception;
+      }
+      const record = this.usersRepository.create(entity);
+      user = await transactionalEntityManager.save(record);
+    });
     return user;
   }
 
-  async findOne(username: string): Promise<User> {
-    return this.usersRepository.findOneByOrFail({ username });
+  async exists(login: string): Promise<boolean> {
+    return this.usersRepository.exist({ where: this.where(login) });
+  }
+
+  async findOne(login: string): Promise<User | null> {
+    return this.usersRepository.findOneBy(this.where(login));
   }
 }

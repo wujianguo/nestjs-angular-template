@@ -5,12 +5,14 @@ export class SignupToken {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  @Generated('uuid')
+  @Column({ length: 32 })
   token: string;
 
-  @Column()
-  expireOn: Date;
+  @Column({ default: 0 })
+  count: number;
+
+  // @Column()
+  // expireOn: Date;
 
   @Column('simple-json')
   extraData: { [key: string]: any };

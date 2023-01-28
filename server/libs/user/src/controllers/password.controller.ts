@@ -9,7 +9,7 @@ import {
 } from '@nestjs/swagger';
 // import { UserService } from '../services/user.service';
 import { ChangePasswordRequest, ResetPasswordRequest } from '../dto/password.dto';
-import { SendCodeResponse, SendEmailCodeRequest, SendPhoneCodeRequest } from '../dto/mfa.dto';
+import { SendCodeResponse, SendEmailCodeRequest, SendSmsCodeRequest } from '../dto/mfa.dto';
 
 @Controller('auth/password')
 @ApiTags('Authentication')
@@ -37,14 +37,14 @@ export class PasswordController {
     return new SendCodeResponse();
   }
 
-  @Post('reset/phone/send')
+  @Post('reset/sms/send')
   @ApiOperation({ summary: 'Request reset password, send sms message.' })
   @ApiCreatedResponse({
     description: 'Sms message sent',
     type: SendCodeResponse,
   })
-  requestResetPhoneSend(@Body() body: SendPhoneCodeRequest): SendCodeResponse {
-    console.log(body.phone);
+  requestResetSmsSend(@Body() body: SendSmsCodeRequest): SendCodeResponse {
+    console.log(body.phoneNumber);
     return new SendCodeResponse();
   }
 

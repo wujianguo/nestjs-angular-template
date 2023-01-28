@@ -9,7 +9,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 // import { UserService } from '../services/user.service';
-import { SendEmailCodeRequest, SendPhoneCodeRequest, SendCodeResponse, VerifyCodeRequest } from '../dto/mfa.dto';
+import { SendEmailCodeRequest, SendSmsCodeRequest, SendCodeResponse, VerifyCodeRequest } from '../dto/mfa.dto';
 
 @Controller('auth/signout')
 @ApiBearerAuth()
@@ -29,15 +29,15 @@ export class SignoutController {
     return new SendCodeResponse();
   }
 
-  @Post('phone/send')
-  @ApiOperation({ summary: 'Send sms message to phone for delete me.' })
+  @Post('sms/send')
+  @ApiOperation({ summary: 'Send sms message to phone number for delete me.' })
   @ApiBadRequestResponse({ description: 'Phone number is invalid' })
   @ApiCreatedResponse({
     description: 'Sms message sent',
     type: SendCodeResponse,
   })
-  signoutPhoneSend(@Body() body: SendPhoneCodeRequest): SendCodeResponse {
-    console.log(body.phone);
+  signoutSmsSend(@Body() body: SendSmsCodeRequest): SendCodeResponse {
+    console.log(body.phoneNumber);
     return new SendCodeResponse();
   }
 

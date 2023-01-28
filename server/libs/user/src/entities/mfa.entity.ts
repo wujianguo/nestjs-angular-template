@@ -1,8 +1,8 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Generated } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 export enum RecipientType {
   Email = 'email',
-  Phone = 'phone',
+  Sms = 'sms',
 }
 
 @Entity()
@@ -13,9 +13,11 @@ export class MultiFactorVerifyCode {
   @Column()
   code: string;
 
-  @Column()
-  @Generated('uuid')
+  @Column({ length: 32 })
   token: string;
+
+  @Column({ default: 0 })
+  count: number;
 
   @Column()
   usage: string;
@@ -27,7 +29,10 @@ export class MultiFactorVerifyCode {
   recipient: string;
 
   @Column()
-  expireOn: Date;
+  hashedRecipient: string;
+
+  // @Column()
+  // expireOn: Date;
 
   @CreateDateColumn()
   createTime: Date;

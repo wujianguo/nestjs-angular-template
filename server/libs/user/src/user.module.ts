@@ -1,4 +1,3 @@
-import { MessageModule } from '@app/message';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -10,11 +9,12 @@ import { SocialController } from './controllers/social.controller';
 import { UserController } from './controllers/user.controller';
 import { userEntities } from './entities/entities';
 import { AuthService } from './services/auth.service';
+import { SecurityService } from './services/security.service';
 import { SignupService } from './services/signup.service';
 import { UsersService } from './services/users.service';
 
 @Module({
-  imports: [ConfigModule, MessageModule, TypeOrmModule.forFeature([...userEntities])],
+  imports: [ConfigModule, TypeOrmModule.forFeature([...userEntities])],
   controllers: [
     AuthController,
     SignupController,
@@ -23,6 +23,6 @@ import { UsersService } from './services/users.service';
     SocialController,
     UserController,
   ],
-  providers: [AuthService, SignupService, UsersService],
+  providers: [AuthService, SignupService, UsersService, SecurityService],
 })
 export class UserModule {}

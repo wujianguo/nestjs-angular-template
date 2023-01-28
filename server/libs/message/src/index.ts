@@ -1,2 +1,2 @@
-export * from './message.module';
-export * from './services/emai.service';
+export * from './email';
+export * from './sms';

@@ -29,7 +29,7 @@ export class AuthController {
   @HttpCode(200)
   @ApiOperation({ summary: 'Login by username/email/phone and password.' })
   @ApiBadRequestResponse({
-    description: 'Username/Email or password is invalid',
+    description: 'Username/Email/Phone or password is invalid',
   })
   @ApiOkResponse({
     description: 'My user info',

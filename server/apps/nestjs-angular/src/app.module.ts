@@ -1,9 +1,10 @@
-import { userEntities, UserModule } from '@app/user';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
+import { userEntities, UserModule } from '@app/user';
+import { EmailModule, SmsModule } from '@app/message';
 import { AppController } from './app.controller';
 import { CommonConfig, DatabaseConfig, loadConfig } from './config/configuration';
 
@@ -28,6 +29,8 @@ import { CommonConfig, DatabaseConfig, loadConfig } from './config/configuration
       inject: [ConfigService],
     }),
     UserModule,
+    EmailModule.forRoot(),
+    SmsModule.forRoot(),
   ],
   controllers: [AppController],
 })

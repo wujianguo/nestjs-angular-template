@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, Length, Matches } from 'class-validator';
 import { UserProfileDto } from './user.dto';
 
 export class SignupTokenResponse {
@@ -14,6 +14,11 @@ export class SignupTokenResponse {
 export class SignupProfileDto extends UserProfileDto {
   @IsString()
   @IsNotEmpty()
+  @Length(6, 20)
+  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
+    message:
+      'password should contains (uppercase letters && lowercase letters && (numbers || punctuation and special characters))',
+  })
   @ApiProperty()
   password: string;
 }
@@ -21,6 +26,7 @@ export class SignupProfileDto extends UserProfileDto {
 export class SignupCompleteRequest extends SignupProfileDto {
   @IsString()
   @IsNotEmpty()
+  @Length(102, 102)
   @ApiProperty()
   token: string;
 }
