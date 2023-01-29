@@ -3,12 +3,14 @@ import { IsNotEmpty, IsString, Length, Matches } from 'class-validator';
 import { UserProfileDto } from './user.dto';
 
 export class SignupTokenResponse {
-  @IsString()
-  @IsNotEmpty()
   @ApiProperty({
     description: 'The signup token, use this to complete your signup',
   })
   token: string;
+
+  constructor(token: string) {
+    this.token = token;
+  }
 }
 
 export class SignupProfileDto extends UserProfileDto {

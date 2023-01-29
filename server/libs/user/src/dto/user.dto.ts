@@ -1,5 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { PartialType } from '@nestjs/mapped-types';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { User } from '../entities/user.entity';
 import { IsAlphanumeric, IsNotEmpty, IsString, Length } from 'class-validator';
 

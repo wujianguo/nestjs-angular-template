@@ -25,6 +25,7 @@ import { CommonConfig, DatabaseConfig, loadConfig } from './config/configuration
         database: configService.get<DatabaseConfig>('db').sqlite.database,
         entities: [...userEntities],
         synchronize: configService.get<CommonConfig>('common').debug,
+        logging: configService.get<CommonConfig>('common').debug,
       }),
       inject: [ConfigService],
     }),

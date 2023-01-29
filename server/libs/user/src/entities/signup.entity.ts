@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Generated } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity()
 export class SignupToken {
@@ -10,9 +10,6 @@ export class SignupToken {
 
   @Column({ default: 0 })
   count: number;
-
-  // @Column()
-  // expireOn: Date;
 
   @Column('simple-json')
   extraData: { [key: string]: any };

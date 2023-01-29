@@ -62,6 +62,9 @@ export class AdminAuthConfig {
   socials: AdminSocialAuthConfig[];
 
   @ApiProperty()
+  deviceNumberLimit: number;
+
+  @ApiProperty()
   sendLimitTime: number;
 
   @ApiProperty()

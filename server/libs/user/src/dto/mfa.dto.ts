@@ -20,6 +20,10 @@ export class SendSmsCodeRequest {
 export class SendCodeResponse {
   @ApiProperty()
   token: string;
+
+  constructor(token: string) {
+    this.token = token;
+  }
 }
 
 export class VerifyCodeRequest {

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Delete, HttpCode } from '@nestjs/common';
+import { Controller, Post, Body, Delete, HttpCode, UseGuards } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -10,7 +10,9 @@ import {
 } from '@nestjs/swagger';
 // import { UserService } from '../services/user.service';
 import { SendEmailCodeRequest, SendSmsCodeRequest, SendCodeResponse, VerifyCodeRequest } from '../dto/mfa.dto';
+import { BearerAuthGuard } from '../strategies/bearer.strategy';
 
+@UseGuards(BearerAuthGuard)
 @Controller('auth/signout')
 @ApiBearerAuth()
 @ApiTags('Authentication')
@@ -26,7 +28,7 @@ export class SignoutController {
   })
   signoutEmailSend(@Body() body: SendEmailCodeRequest): SendCodeResponse {
     console.log(body.email);
-    return new SendCodeResponse();
+    return new SendCodeResponse('');
   }
 
   @Post('sms/send')
@@ -38,7 +40,7 @@ export class SignoutController {
   })
   signoutSmsSend(@Body() body: SendSmsCodeRequest): SendCodeResponse {
     console.log(body.phoneNumber);
-    return new SendCodeResponse();
+    return new SendCodeResponse('');
   }
 
   @Delete()

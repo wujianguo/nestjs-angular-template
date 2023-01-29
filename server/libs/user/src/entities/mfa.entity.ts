@@ -31,9 +31,6 @@ export class MultiFactorVerifyCode {
   @Column()
   hashedRecipient: string;
 
-  // @Column()
-  // expireOn: Date;
-
   @CreateDateColumn()
   createTime: Date;
 

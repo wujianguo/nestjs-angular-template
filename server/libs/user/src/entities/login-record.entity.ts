@@ -1,4 +1,13 @@
-import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Index,
+  JoinColumn,
+} from 'typeorm';
 import { User } from './user.entity';
 
 @Entity()
@@ -6,20 +15,25 @@ export class LoginRecord {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ default: '' })
   userAgent: string;
 
+  @Column({ default: '' })
+  ip: string;
+
+  @Index({ unique: true })
   @Column()
   token: string;
-
-  @Column({ default: true })
-  isActive: boolean;
 
   @ManyToOne(() => User, (user) => user.loginRecords, {
     cascade: true,
     nullable: false,
   })
+  @JoinColumn({ name: 'userId' })
   user: User;
+
+  @Column()
+  userId: number;
 
   @CreateDateColumn()
   createTime: Date;

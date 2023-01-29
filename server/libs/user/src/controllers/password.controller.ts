@@ -34,7 +34,7 @@ export class PasswordController {
   })
   requestResetEmailSend(@Body() body: SendEmailCodeRequest): SendCodeResponse {
     console.log(body.email);
-    return new SendCodeResponse();
+    return new SendCodeResponse('');
   }
 
   @Post('reset/sms/send')
@@ -45,7 +45,7 @@ export class PasswordController {
   })
   requestResetSmsSend(@Body() body: SendSmsCodeRequest): SendCodeResponse {
     console.log(body.phoneNumber);
-    return new SendCodeResponse();
+    return new SendCodeResponse('');
   }
 
   @Post('reset/complete')

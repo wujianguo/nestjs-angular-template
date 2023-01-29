@@ -5,11 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmailMessage, EmailModule, LocmemEmailAdapter, LocmemSmsAdapter, SmsMessage, SmsModule } from '@app/message';
 import { UserModule } from '../../src/user.module';
 import { userEntities } from '../../src/entities/entities';
-import { HttpAdapterHost } from '@nestjs/core';
-import { AllExceptionsFilter } from '../../../../apps/nestjs-angular/src/common/filters/all-exception.filter';
 
 export const loadConfig = () => {
   const auth = {
+    deviceNumberLimit: 3,
     sendLimitTime: 3,
     signupExpireTime: 5,
     codeExpireTime: 5,
@@ -51,8 +50,8 @@ export class AppContext {
       logger: ['error', 'warn', 'debug', 'log'],
     });
     app.useGlobalPipes(new ValidationPipe());
-    const httpAdapter = app.get(HttpAdapterHost);
-    app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
+    // const httpAdapter = app.get(HttpAdapterHost);
+    // app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
     await app.init();
     this.app = app;
     return this;

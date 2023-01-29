@@ -2,35 +2,39 @@ import { AppContext } from './common/app';
 import { UserClient } from './common/client';
 
 describe('Signup', () => {
-  let app: AppContext;
+  let context: AppContext;
   let client: UserClient;
 
   beforeAll(async () => {
-    app = await new AppContext().build();
+    context = await new AppContext().build();
   });
 
   afterAll(async () => {
-    await app.close();
+    await context.close();
   });
 
   beforeEach(() => {
-    client = new UserClient(app.app);
+    client = new UserClient(context);
   });
 
   describe('success', () => {
     async function expectSuccess(token: string) {
       expect(token.length).toBeGreaterThan(10);
-      const code = app.getVerifyCode();
+      const code = context.getVerifyCode();
       const verifyResp = await client.signupVerify({ token: token, code: code }).expect(200);
       const username = 'myname' + token.substring(0, 4);
-      const resp = await client
-        .signupComplete({
-          token: verifyResp.body.token,
-          username: username,
-          password: 'passworD123*x',
-        })
-        .expect(201);
+      const body = {
+        token: verifyResp.body.token,
+        username: username,
+        password: 'passworD123*x',
+      };
+      const resp = await client.signupComplete(body).expect(201);
       expect(resp.body.username).toBe(username);
+
+      const client2 = new UserClient(context);
+      client2.setToken(resp.body.token);
+      const profile = await client2.profile().expect(200);
+      expect(profile.body.username).toBe(username);
     }
 
     it('email', async () => {
@@ -39,20 +43,20 @@ describe('Signup', () => {
     });
 
     it('phone number', async () => {
-      const resp = await client.signupSmsSend({ phoneNumber: '+8617700001234' }).expect(201);
+      const resp = await client.signupSmsSend({ phoneNumber: '+8617200001234' }).expect(201);
       await expectSuccess(resp.body.token);
     });
   });
 
   describe('failure', () => {
     async function signupVerifyCode(code: string, statusCode: number) {
-      const resp = await client.signupEmailSend({ email: app.randomCode() + 'testfailure1@example.com' }).expect(201);
+      const resp = await client.signupEmailSend({ email: context.randomCode() + 'telure1@example.com' }).expect(201);
       await client.signupVerify({ token: resp.body.token, code }).expect(statusCode);
     }
 
     async function signupVerifyToken(token: string, statusCode: number) {
-      await client.signupEmailSend({ email: app.randomCode() + 'testfailure2@example.com' }).expect(201);
-      const code = app.getVerifyCode();
+      await client.signupEmailSend({ email: context.randomCode() + 'testfailure2@example.com' }).expect(201);
+      const code = context.getVerifyCode();
       await client.signupVerify({ token, code }).expect(statusCode);
     }
 
@@ -98,13 +102,13 @@ describe('Signup', () => {
     it('code expire', async () => {
       const resp = await client.signupEmailSend({ email: 'testcodeexpire1@example.com' }).expect(201);
       await new Promise((r) => setTimeout(r, 5000));
-      const code = app.getVerifyCode();
+      const code = context.getVerifyCode();
       await client.signupVerify({ token: resp.body.token, code }).expect(400);
     }, 100000);
 
     it('complete signup token expire', async () => {
       const resp = await client.signupEmailSend({ email: 'testtokenexpire1@example.com' }).expect(201);
-      const code = app.getVerifyCode();
+      const code = context.getVerifyCode();
       const verifyResp = await client.signupVerify({ token: resp.body.token, code }).expect(200);
       await new Promise((r) => setTimeout(r, 5000));
       await signupComplete(verifyResp.body.token, 400);
@@ -112,7 +116,7 @@ describe('Signup', () => {
 
     it('code verify at most 4 times', async () => {
       const resp = await client.signupEmailSend({ email: 'testcvat@example.com' }).expect(201);
-      const code = app.getVerifyCode();
+      const code = context.getVerifyCode();
       await client.signupVerify({ token: resp.body.token, code: '123456' }).expect(400);
       await client.signupVerify({ token: resp.body.token, code: '123456' }).expect(400);
       await client.signupVerify({ token: resp.body.token, code: '123456' }).expect(400);
@@ -120,7 +124,7 @@ describe('Signup', () => {
       await client.signupVerify({ token: resp.body.token, code: code }).expect(400);
 
       const resp2 = await client.signupEmailSend({ email: 'testcvat2@example.com' }).expect(201);
-      const code2 = app.getVerifyCode();
+      const code2 = context.getVerifyCode();
       await client.signupVerify({ token: resp2.body.token, code: '123456' }).expect(400);
       await client.signupVerify({ token: resp2.body.token, code: '123456' }).expect(400);
       await client.signupVerify({ token: resp2.body.token, code: '123456' }).expect(400);
@@ -129,7 +133,7 @@ describe('Signup', () => {
 
     it('complete', async () => {
       const resp = await client.signupEmailSend({ email: 'testxyz@example.com' }).expect(201);
-      const code = app.getVerifyCode();
+      const code = context.getVerifyCode();
       const verifyResp = await client.signupVerify({ token: resp.body.token, code }).expect(200);
       const token = verifyResp.body.token;
       await signupComplete('xyz' + token.substring(3), 400);
@@ -141,7 +145,7 @@ describe('Signup', () => {
       await signupComplete(token, 400);
 
       const resp2 = await client.signupEmailSend({ email: 'test1234yzx@example.com' }).expect(201);
-      const code2 = app.getVerifyCode();
+      const code2 = context.getVerifyCode();
       const verifyResp2 = await client.signupVerify({ token: resp2.body.token, code: code2 }).expect(200);
       const token2 = verifyResp2.body.token;
       await signupComplete(token2.substring(0, 32) + token2.substring(0, 68) + '00', 400);
@@ -152,22 +156,22 @@ describe('Signup', () => {
 
     it('complete conflict', async () => {
       const resp = await client.signupEmailSend({ email: 'coml1@example.com' }).expect(201);
-      const code = app.getVerifyCode();
+      const code = context.getVerifyCode();
       const verifyResp = await client.signupVerify({ token: resp.body.token, code }).expect(200);
 
       const resp2 = await client.signupEmailSend({ email: 'coml1@example.com' }).expect(201);
-      const code2 = app.getVerifyCode();
+      const code2 = context.getVerifyCode();
       const verifyResp2 = await client.signupVerify({ token: resp2.body.token, code: code2 }).expect(200);
 
       await signupComplete(verifyResp2.body.token, 201);
       await signupComplete(verifyResp.body.token, 400);
 
       const resp3 = await client.signupSmsSend({ phoneNumber: '+8617700001204' }).expect(201);
-      const code3 = app.getVerifyCode();
+      const code3 = context.getVerifyCode();
       const verifyResp3 = await client.signupVerify({ token: resp3.body.token, code: code3 }).expect(200);
 
       const resp4 = await client.signupSmsSend({ phoneNumber: '+8617700001204' }).expect(201);
-      const code4 = app.getVerifyCode();
+      const code4 = context.getVerifyCode();
       const verifyResp4 = await client.signupVerify({ token: resp4.body.token, code: code4 }).expect(200);
 
       await signupComplete(verifyResp4.body.token, 201);
@@ -191,7 +195,7 @@ describe('Signup', () => {
         const resp = await client.signupSmsSend({ phoneNumber }).expect(201);
         token = resp.body.token;
       }
-      const code = app.getVerifyCode();
+      const code = context.getVerifyCode();
       const verifyResp = await client.signupVerify({ token: token, code: code }).expect(200);
       const body = {
         token: verifyResp.body.token,
@@ -225,7 +229,7 @@ describe('Signup', () => {
       await signupWith(email, '', 'aA123411', password, 201);
       // await signupWith(email, '', 'aA123411xx', password, 400);
       const resp = await client.signupEmailSend({ email }).expect(201);
-      const code = app.getVerifyCode();
+      const code = context.getVerifyCode();
       await client.signupVerify({ token: resp.body.token, code: code }).expect(400);
     });
 
@@ -235,7 +239,7 @@ describe('Signup', () => {
       await signupWith('', phoneNumber, 'aA123412', password, 201);
       // await signupWith('', phoneNumber, 'aA123412xx', password, 400);
       const resp = await client.signupSmsSend({ phoneNumber }).expect(201);
-      const code = app.getVerifyCode();
+      const code = context.getVerifyCode();
       await client.signupVerify({ token: resp.body.token, code: code }).expect(400);
     });
 

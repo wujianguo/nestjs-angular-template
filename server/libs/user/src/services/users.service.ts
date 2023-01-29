@@ -1,12 +1,15 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindOptionsWhere, Repository } from 'typeorm';
 import { SignupProfileDto } from '../dto/signup.dto';
+import { UpdateUserRequest } from '../dto/user.dto';
 import { User } from '../entities/user.entity';
 import { SecurityService } from './security.service';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
@@ -57,6 +60,7 @@ export class UsersService {
   async create(profile: SignupProfileDto, email?: string, phoneNumber?: string): Promise<User> {
     const exist1 = await this.usersRepository.exist({ where: { username: profile.username } });
     if (exist1) {
+      this.logger.error(`username(${profile.username}) exists`);
       throw this.usernameExistsException();
     }
 
@@ -92,6 +96,7 @@ export class UsersService {
     await this.dataSource.transaction(async (transactionalEntityManager) => {
       const exist2 = await transactionalEntityManager.exists(User, { where });
       if (exist2) {
+        this.logger.error(`email/phone (${email}-${phoneNumber}) exists`);
         throw exception;
       }
       const record = this.usersRepository.create(entity);
@@ -106,5 +111,19 @@ export class UsersService {
 
   async findOne(login: string): Promise<User | null> {
     return this.usersRepository.findOneBy(this.where(login));
+  }
+
+  async update(user: User, dto: UpdateUserRequest): Promise<User> {
+    await this.usersRepository.update({ id: user.id }, dto);
+    if (dto.username !== null && dto.username !== undefined) {
+      user.username = dto.username;
+    }
+    if (dto.firstName !== null && dto.firstName !== undefined) {
+      user.firstName = dto.firstName;
+    }
+    if (dto.lastName !== null && dto.lastName !== undefined) {
+      user.lastName = dto.lastName;
+    }
+    return user;
   }
 }

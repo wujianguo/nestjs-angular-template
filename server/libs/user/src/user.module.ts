@@ -12,6 +12,7 @@ import { AuthService } from './services/auth.service';
 import { SecurityService } from './services/security.service';
 import { SignupService } from './services/signup.service';
 import { UsersService } from './services/users.service';
+import { BearerStrategy } from './strategies/bearer.strategy';
 
 @Module({
   imports: [ConfigModule, TypeOrmModule.forFeature([...userEntities])],
@@ -23,6 +24,6 @@ import { UsersService } from './services/users.service';
     SocialController,
     UserController,
   ],
-  providers: [AuthService, SignupService, UsersService, SecurityService],
+  providers: [AuthService, SignupService, UsersService, SecurityService, BearerStrategy],
 })
 export class UserModule {}

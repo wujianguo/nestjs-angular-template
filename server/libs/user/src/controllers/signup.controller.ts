@@ -1,4 +1,5 @@
-import { Controller, Post, Body, HttpCode } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, Req, Ip } from '@nestjs/common';
+import { Request } from 'express';
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
@@ -11,11 +12,12 @@ import { AuthenticatedUserResponse, mapAuthUser } from '../dto/user.dto';
 import { SignupTokenResponse, SignupCompleteRequest } from '../dto/signup.dto';
 import { SendEmailCodeRequest, SendSmsCodeRequest, SendCodeResponse, VerifyCodeRequest } from '../dto/mfa.dto';
 import { SignupService } from '../services/signup.service';
+import { AuthService } from '../services/auth.service';
 
 @Controller('auth/signup')
 @ApiTags('Authentication')
 export class SignupController {
-  constructor(private readonly signupService: SignupService) {}
+  constructor(private readonly signupService: SignupService, private readonly authService: AuthService) {}
 
   @Post('email/send')
   @ApiOperation({ summary: 'Send an email for signup.' })
@@ -27,7 +29,7 @@ export class SignupController {
   })
   async signupEmailSend(@Body() body: SendEmailCodeRequest): Promise<SendCodeResponse> {
     const token = await this.signupService.signupEmailSend(body.email);
-    return { token: token };
+    return new SendCodeResponse(token);
   }
 
   @Post('sms/send')
@@ -40,7 +42,7 @@ export class SignupController {
   })
   async signupSmsSend(@Body() body: SendSmsCodeRequest): Promise<SendCodeResponse> {
     const token = await this.signupService.signupSmsSend(body.phoneNumber);
-    return { token: token };
+    return new SendCodeResponse(token);
   }
 
   @Post('verify')
@@ -55,7 +57,7 @@ export class SignupController {
   })
   async signupVerify(@Body() body: VerifyCodeRequest): Promise<SignupTokenResponse> {
     const token = await this.signupService.signupVerify(body.token, body.code);
-    return { token: token };
+    return new SignupTokenResponse(token);
   }
 
   @Post('complete')
@@ -65,8 +67,13 @@ export class SignupController {
     description: 'The created new user',
     type: AuthenticatedUserResponse,
   })
-  async signupComplete(@Body() body: SignupCompleteRequest): Promise<AuthenticatedUserResponse> {
+  async signupComplete(
+    @Req() req: Request,
+    @Body() body: SignupCompleteRequest,
+    @Ip() ip: string,
+  ): Promise<AuthenticatedUserResponse> {
     const user = await this.signupService.signupComplete(body.token, body);
-    return mapAuthUser('token', user);
+    const record = await this.authService.createToken(user, req.headers['user-agent'], ip);
+    return mapAuthUser(record.token, user);
   }
 }

@@ -51,6 +51,7 @@ export class SignupService {
   private async checkRecipientExists(recipient: string): Promise<void> {
     const exist = await this.recipientExists(recipient);
     if (exist) {
+      // todo: set retry-after header
       throw new HttpException('Too Many Requests', HttpStatus.TOO_MANY_REQUESTS);
     }
   }

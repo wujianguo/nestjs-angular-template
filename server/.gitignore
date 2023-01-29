@@ -38,3 +38,7 @@ report/
 # Config
 **/config/config.yaml
 **/config/*.test.yaml
+
+# sqlite3
+db.sqlite3
+db.sqlite3-journal

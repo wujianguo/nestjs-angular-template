@@ -10,6 +10,7 @@ export const parseConfig = (conf: Record<string, any>): AdminAuthConfig => {
       enable: true,
     },
     socials: [],
+    deviceNumberLimit: 3,
     sendLimitTime: 60,
     codeExpireTime: 60,
     signupExpireTime: 60,
