@@ -85,6 +85,19 @@ describe('Auth', () => {
       client = new UserClient(context);
     });
 
+    it('password attempt', async () => {
+      const username = `username${index}`;
+      const recipient = `user${index}@example.com`;
+      const password = `Password1`;
+      await client.register(username, recipient, password);
+      await client.login({ login: username, password: '123456' }).expect(400);
+      await client.login({ login: username, password: '123456' }).expect(400);
+      await client.login({ login: username, password: '123456' }).expect(400);
+      await client.login({ login: username, password }).expect(429);
+      await new Promise((r) => setTimeout(r, 5000));
+      await client.login({ login: username, password }).expect(200);
+    }, 100000);
+
     it('device number', async () => {
       const username = `username${index}`;
       const recipient = `user${index}@example.com`;

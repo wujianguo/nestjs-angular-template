@@ -78,4 +78,8 @@ export class AdminAuthConfig {
 
   @ApiProperty()
   securityKey: string;
+
+  authLimitCount: number;
+
+  authLimitTime: number;
 }

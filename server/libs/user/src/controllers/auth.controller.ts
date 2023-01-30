@@ -39,11 +39,12 @@ export class AuthController {
     type: AuthenticatedUserResponse,
   })
   async login(@Req() req: Request, @Body() body: LoginRequest, @Ip() ip: string): Promise<AuthenticatedUserResponse> {
-    const user = await this.authService.validateUser(body.login, body.password);
+    const userAgent = req.headers['user-agent']?.substring(0, 256);
+    const user = await this.authService.validateUser(body.login, body.password, userAgent, ip);
     if (!user) {
       throw new BadRequestException('username/email/phone or password is invalid');
     }
-    const record = await this.authService.createToken(user, req.headers['user-agent'], ip);
+    const record = await this.authService.createToken(user, userAgent, ip);
     return mapAuthUser(record.token, user);
   }
 

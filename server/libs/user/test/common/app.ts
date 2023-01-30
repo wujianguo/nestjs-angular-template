@@ -14,6 +14,8 @@ export const loadConfig = () => {
     codeExpireTime: 5,
     codeVerifyMaxCount: 4,
     securityKey: '902hshqyjcoh5tyap2lx5uttt8m80tvg',
+    authLimitCount: 3,
+    authLimitTime: 5,
   };
   return {
     auth: auth,

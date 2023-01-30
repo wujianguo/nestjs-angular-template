@@ -15,10 +15,10 @@ export class LoginRecord {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ default: '' })
+  @Column({ length: 256, default: '' })
   userAgent: string;
 
-  @Column({ default: '' })
+  @Column({ length: 64, default: '' })
   ip: string;
 
   @Index({ unique: true })
@@ -34,6 +34,28 @@ export class LoginRecord {
 
   @Column()
   userId: number;
+
+  @CreateDateColumn()
+  createTime: Date;
+
+  @UpdateDateColumn()
+  updateTime: Date;
+}
+
+@Entity()
+export class LoginFailure {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Index()
+  @Column({ length: 320 })
+  login: string;
+
+  @Column({ length: 256, default: '' })
+  userAgent: string;
+
+  @Column({ length: 64, default: '' })
+  ip: string;
 
   @CreateDateColumn()
   createTime: Date;

@@ -10,7 +10,7 @@ export class MultiFactorVerifyCode {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ length: 6 })
   code: string;
 
   @Column({ length: 32 })

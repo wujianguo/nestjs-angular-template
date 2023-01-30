@@ -252,6 +252,6 @@ describe('Signup', () => {
       await signup(username + '5', 'password123*&^', 400);
       await signup(username + '6', 'ABC123*&^', 400);
       await signup(username + '7', 'ABC', 400);
-    });
+    }, 100000);
   });
 });

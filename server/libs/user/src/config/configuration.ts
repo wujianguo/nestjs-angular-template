@@ -16,5 +16,7 @@ export const parseConfig = (conf: Record<string, any>): AdminAuthConfig => {
     signupExpireTime: 60,
     codeVerifyMaxCount: 3,
     securityKey: '902hshqyjcoh5tyap2lx5uttt8m80tvg',
+    authLimitCount: 3,
+    authLimitTime: 5 * 60,
   };
 };
