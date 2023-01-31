@@ -48,9 +48,7 @@ export class AppContext {
       ],
     }).compile();
 
-    const app = moduleFixture.createNestApplication({
-      logger: ['error', 'warn', 'debug', 'log'],
-    });
+    const app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe());
     // const httpAdapter = app.get(HttpAdapterHost);
     // app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));

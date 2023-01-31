@@ -3,7 +3,7 @@ import { SendEmailCodeRequest, SendSmsCodeRequest, VerifyCodeRequest } from '../
 import { SignupCompleteRequest } from '../../src/dto/signup.dto';
 import { AuthenticatedUserResponse, UpdateUserRequest } from '../../src/dto/user.dto';
 import { LoginRequest } from '../../src/dto/login.dto';
-import { PasswordRequest } from '../../src/dto/password.dto';
+import { ChangePasswordRequest, PasswordRequest, ResetPasswordRequest } from '../../src/dto/password.dto';
 import { AppContext } from './app';
 
 export class UserClient {
@@ -114,6 +114,22 @@ export class UserClient {
 
   updateProfile(body: UpdateUserRequest) {
     return this.patch('user/profile', {}, body);
+  }
+
+  changePassword(body: ChangePasswordRequest) {
+    return this.post('auth/password/change', {}, body);
+  }
+
+  resetPswdEmailSend(body: SendEmailCodeRequest) {
+    return this.post('auth/password/reset/email/send', {}, body);
+  }
+
+  resetPswdSmsSend(body: SendSmsCodeRequest) {
+    return this.post('auth/password/reset/sms/send', {}, body);
+  }
+
+  resetPswdComplete(body: ResetPasswordRequest) {
+    return this.post('auth/password/reset/complete', {}, body);
   }
 
   async register(username: string, recipient: string, password: string): Promise<AuthenticatedUserResponse> {

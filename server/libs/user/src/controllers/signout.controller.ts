@@ -43,7 +43,7 @@ export class SignoutController {
     @Body() body: PasswordRequest,
   ): Promise<SendCodeResponse> {
     const userAgent = req.headers['user-agent']?.substring(0, 256);
-    await this.authService.validateUser(context.user.username, body.password, userAgent, ip);
+    await this.authService.validateUser(context.user, body.password, userAgent, ip);
     const email = await this.usersService.email(context.user);
     const token = await this.mfaService.sendEmailCode(email, 'signout', context.user.id);
     return new SendCodeResponse(token);
@@ -63,7 +63,7 @@ export class SignoutController {
     @Body() body: PasswordRequest,
   ): Promise<SendCodeResponse> {
     const userAgent = req.headers['user-agent']?.substring(0, 256);
-    await this.authService.validateUser(context.user.username, body.password, userAgent, ip);
+    await this.authService.validateUser(context.user, body.password, userAgent, ip);
     const phoneNumber = await this.usersService.phoneNumber(context.user);
     const token = await this.mfaService.sendSmsCode(phoneNumber, 'signout', context.user.id);
     return new SendCodeResponse(token);

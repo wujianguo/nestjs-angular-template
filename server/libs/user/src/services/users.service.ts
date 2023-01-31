@@ -164,6 +164,11 @@ export class UsersService {
     return user;
   }
 
+  async changePassword(user: User, newPassword: string): Promise<void> {
+    const password = await this.securityService.bcryptHash(newPassword);
+    await this.usersRepository.update({ id: user.id }, { password });
+  }
+
   async remove(user: User): Promise<void> {
     // todo: remove relations
     this.usersRepository.remove(user);

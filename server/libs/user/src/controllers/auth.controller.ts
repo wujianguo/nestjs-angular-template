@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Delete, HttpCode, Req, Ip, BadRequestException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Delete, HttpCode, Req, Ip, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
 import {
   ApiBadRequestResponse,
@@ -40,10 +40,7 @@ export class AuthController {
   })
   async login(@Req() req: Request, @Body() body: LoginRequest, @Ip() ip: string): Promise<AuthenticatedUserResponse> {
     const userAgent = req.headers['user-agent']?.substring(0, 256);
-    const user = await this.authService.validateUser(body.login, body.password, userAgent, ip);
-    if (!user) {
-      throw new BadRequestException('username/email/phone or password is invalid');
-    }
+    const user = await this.authService.validateLogin(body.login, body.password, userAgent, ip);
     const record = await this.authService.createToken(user, userAgent, ip);
     return mapAuthUser(record.token, user);
   }
