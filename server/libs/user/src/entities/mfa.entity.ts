@@ -1,10 +1,11 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
-export enum RecipientType {
-  Email = 'email',
-  Sms = 'sms',
-}
+// export enum RecipientType {
+//   Email = 'email',
+//   Sms = 'sms',
+// }
 
+// todo: delete expired
 @Entity()
 export class MultiFactorVerifyCode {
   @PrimaryGeneratedColumn()
@@ -22,14 +23,17 @@ export class MultiFactorVerifyCode {
   @Column()
   usage: string;
 
-  @Column({ type: 'simple-enum', enum: RecipientType })
-  recipientType: RecipientType;
+  // @Column({ type: 'simple-enum', enum: RecipientType })
+  // recipientType: RecipientType;
 
-  @Column()
-  recipient: string;
+  @Column({ default: '' })
+  encryptedRecipient: string;
 
-  @Column()
+  @Column({ default: '' })
   hashedRecipient: string;
+
+  @Column({ default: 0 })
+  associatedId: number;
 
   @CreateDateColumn()
   createTime: Date;

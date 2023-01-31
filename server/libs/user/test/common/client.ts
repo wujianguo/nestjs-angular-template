@@ -3,6 +3,7 @@ import { SendEmailCodeRequest, SendSmsCodeRequest, VerifyCodeRequest } from '../
 import { SignupCompleteRequest } from '../../src/dto/signup.dto';
 import { AuthenticatedUserResponse, UpdateUserRequest } from '../../src/dto/user.dto';
 import { LoginRequest } from '../../src/dto/login.dto';
+import { PasswordRequest } from '../../src/dto/password.dto';
 import { AppContext } from './app';
 
 export class UserClient {
@@ -85,6 +86,18 @@ export class UserClient {
 
   signupComplete(body: SignupCompleteRequest) {
     return this.post('auth/signup/complete', {}, body);
+  }
+
+  signoutEmailSend(body: PasswordRequest) {
+    return this.post('auth/signout/email/send', {}, body);
+  }
+
+  signoutSmsSend(body: PasswordRequest) {
+    return this.post('auth/signout/sms/send', {}, body);
+  }
+
+  signoutComplete(body: VerifyCodeRequest) {
+    return this.post('auth/signout/complete', {}, body);
   }
 
   login(body: LoginRequest) {

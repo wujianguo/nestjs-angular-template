@@ -51,7 +51,7 @@ export class AuthService {
     entity.login = login;
     entity.userAgent = userAgent;
     entity.ip = ip;
-    this.loginFailureRepository.save(entity);
+    await this.loginFailureRepository.save(entity);
     return null;
   }
 
@@ -62,6 +62,10 @@ export class AuthService {
   async removeToken(token: LoginRecord): Promise<void> {
     this.loginRecordRepository.remove(token);
   }
+
+  // async removeAll(user: User): Promise<void> {
+  //   this.loginRecordRepository.delete({ userId: user.id });
+  // }
 
   async createToken(user: User, userAgent: string, ip: string): Promise<LoginRecord> {
     const entity = new LoginRecord();

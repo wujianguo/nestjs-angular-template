@@ -17,10 +17,18 @@ export class UsersService {
     private dataSource: DataSource,
   ) {}
 
+  isEmail(login: string) {
+    return login.indexOf('@') > 0;
+  }
+
+  isPhoneNumber(login: string) {
+    return login.length > 0 && login[0] === '+';
+  }
+
   private where(login: string): FindOptionsWhere<User> {
-    if (login.indexOf('@') >= 0) {
+    if (this.isEmail(login)) {
       return { hashedEmail: this.securityService.hmac(login) };
-    } else if (login.length > 0 && login[0] === '+') {
+    } else if (this.isPhoneNumber(login)) {
       return { hashedPhoneNumber: this.securityService.hmac(login) };
     } else {
       return { username: login };
@@ -45,33 +53,62 @@ export class UsersService {
     return phoneNumber;
   }
 
-  usernameExistsException(): BadRequestException {
-    return new BadRequestException('username already exists', 'UsernameExists');
+  loginExistsException(login: string): BadRequestException {
+    if (this.isEmail(login)) {
+      return new BadRequestException('email already exists', 'EmailExists');
+    } else if (this.isPhoneNumber(login)) {
+      return new BadRequestException('phone number already exists', 'PhoneNumberExists');
+    } else {
+      return new BadRequestException('username already exists', 'UsernameExists');
+    }
   }
 
-  emailExistsException(): BadRequestException {
-    return new BadRequestException('email already exists', 'EmailExists');
+  private async encrypt(recipient: string, hashedPassword: string, iv: string): Promise<string> {
+    let key = '';
+    if (hashedPassword.length >= 26) {
+      key = hashedPassword.substring(10, 26);
+    }
+    return await this.securityService.encrypt(recipient, key, Buffer.from(iv, 'hex'));
   }
 
-  phoneNumberExistsException(): BadRequestException {
-    return new BadRequestException('phone number already exists', 'PhoneNumberExists');
+  private async decrypt(encryptedRecipient: string, hashedPassword: string, iv: string): Promise<string> {
+    let key = '';
+    if (hashedPassword.length >= 26) {
+      key = hashedPassword.substring(10, 26);
+    }
+    return this.securityService.decrypt(encryptedRecipient, key, Buffer.from(iv, 'hex'));
+  }
+
+  async email(user: User): Promise<string> {
+    if (user.encryptedEmail) {
+      return await this.decrypt(user.encryptedEmail, user.password, user.iv);
+    } else {
+      return '';
+    }
+  }
+
+  async phoneNumber(user: User): Promise<string> {
+    if (user.encryptedPhoneNumber) {
+      return await this.decrypt(user.encryptedPhoneNumber, user.password, user.iv);
+    } else {
+      return '';
+    }
   }
 
   async create(profile: SignupProfileDto, email?: string, phoneNumber?: string): Promise<User> {
     const exist1 = await this.usersRepository.exist({ where: { username: profile.username } });
     if (exist1) {
       this.logger.error(`username(${profile.username}) exists`);
-      throw this.usernameExistsException();
+      throw this.loginExistsException(profile.username);
     }
 
     const entity = new User();
     entity.username = profile.username;
     entity.firstName = profile.firstName;
     entity.lastName = profile.lastName;
-    let key = '';
+    entity.password = '';
     if (profile.password) {
       entity.password = await this.securityService.bcryptHash(profile.password);
-      key = entity.password.substring(10, 26);
     }
     const iv = this.securityService.randomBytes();
     entity.iv = iv.toString('hex');
@@ -79,24 +116,24 @@ export class UsersService {
     let exception: BadRequestException;
     if (email) {
       entity.desensitizedEmail = this.desensitizeEmail(email);
-      entity.encryptedEmail = await this.securityService.encrypt(email, key, iv);
+      entity.encryptedEmail = await this.encrypt(email, entity.password, entity.iv);
       entity.hashedEmail = this.securityService.hmac(email);
       where.push({ hashedEmail: entity.hashedEmail });
-      exception = this.emailExistsException();
+      exception = this.loginExistsException(email);
     }
     if (phoneNumber) {
       entity.desensitizedEmail = this.desensitizePhoneNumber(phoneNumber);
-      entity.encryptedPhoneNumber = await this.securityService.encrypt(phoneNumber, key, iv);
+      entity.encryptedPhoneNumber = await this.encrypt(phoneNumber, entity.password, entity.iv);
       entity.hashedPhoneNumber = this.securityService.hmac(phoneNumber);
       where.push({ hashedPhoneNumber: entity.hashedPhoneNumber });
-      exception = this.phoneNumberExistsException();
+      exception = this.loginExistsException(phoneNumber);
     }
 
     let user: User;
     await this.dataSource.transaction(async (transactionalEntityManager) => {
       const exist2 = await transactionalEntityManager.exists(User, { where });
       if (exist2) {
-        this.logger.error(`email/phone (${email}-${phoneNumber}) exists`);
+        this.logger.error(`email/phone (${email}${phoneNumber}) exists`);
         throw exception;
       }
       const record = this.usersRepository.create(entity);
@@ -125,5 +162,10 @@ export class UsersService {
       user.lastName = dto.lastName;
     }
     return user;
+  }
+
+  async remove(user: User): Promise<void> {
+    // todo: remove relations
+    this.usersRepository.remove(user);
   }
 }

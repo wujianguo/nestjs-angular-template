@@ -13,11 +13,16 @@ import { SignupTokenResponse, SignupCompleteRequest } from '../dto/signup.dto';
 import { SendEmailCodeRequest, SendSmsCodeRequest, SendCodeResponse, VerifyCodeRequest } from '../dto/mfa.dto';
 import { SignupService } from '../services/signup.service';
 import { AuthService } from '../services/auth.service';
+import { MultiFactorVerifyService } from '../services/mfa.service';
 
 @Controller('auth/signup')
 @ApiTags('Authentication')
 export class SignupController {
-  constructor(private readonly signupService: SignupService, private readonly authService: AuthService) {}
+  constructor(
+    private readonly mfaService: MultiFactorVerifyService,
+    private readonly signupService: SignupService,
+    private readonly authService: AuthService,
+  ) {}
 
   @Post('email/send')
   @ApiOperation({ summary: 'Send an email for signup.' })
@@ -28,7 +33,7 @@ export class SignupController {
     type: SendCodeResponse,
   })
   async signupEmailSend(@Body() body: SendEmailCodeRequest): Promise<SendCodeResponse> {
-    const token = await this.signupService.signupEmailSend(body.email);
+    const token = await this.mfaService.sendEmailCode(body.email, 'signup');
     return new SendCodeResponse(token);
   }
 
@@ -41,22 +46,21 @@ export class SignupController {
     type: SendCodeResponse,
   })
   async signupSmsSend(@Body() body: SendSmsCodeRequest): Promise<SendCodeResponse> {
-    const token = await this.signupService.signupSmsSend(body.phoneNumber);
+    const token = await this.mfaService.sendSmsCode(body.phoneNumber, 'signup');
     return new SendCodeResponse(token);
   }
 
   @Post('verify')
   @HttpCode(200)
   @ApiOperation({ summary: 'Verify signup code.' })
-  @ApiBadRequestResponse({
-    description: 'Invalid token or code, you have 3 times.',
-  })
+  @ApiBadRequestResponse({ description: 'Invalid token or code, you have 3 times.' })
   @ApiOkResponse({
     description: 'The user did not created yet, use signup token to complete your registration',
     type: SignupTokenResponse,
   })
   async signupVerify(@Body() body: VerifyCodeRequest): Promise<SignupTokenResponse> {
-    const token = await this.signupService.signupVerify(body.token, body.code);
+    const info = await this.mfaService.verify(body.code, body.token, 'signup');
+    const token = await this.signupService.signupVerify(info.recipient);
     return new SignupTokenResponse(token);
   }
 

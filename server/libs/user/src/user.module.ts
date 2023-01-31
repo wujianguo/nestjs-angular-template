@@ -9,6 +9,7 @@ import { SocialController } from './controllers/social.controller';
 import { UserController } from './controllers/user.controller';
 import { userEntities } from './entities/entities';
 import { AuthService } from './services/auth.service';
+import { MultiFactorVerifyService } from './services/mfa.service';
 import { SecurityService } from './services/security.service';
 import { SignupService } from './services/signup.service';
 import { UsersService } from './services/users.service';
@@ -24,6 +25,6 @@ import { BearerStrategy } from './strategies/bearer.strategy';
     SocialController,
     UserController,
   ],
-  providers: [AuthService, SignupService, UsersService, SecurityService, BearerStrategy],
+  providers: [AuthService, SignupService, UsersService, SecurityService, MultiFactorVerifyService, BearerStrategy],
 })
 export class UserModule {}

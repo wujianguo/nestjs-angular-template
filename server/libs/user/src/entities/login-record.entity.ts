@@ -26,8 +26,7 @@ export class LoginRecord {
   token: string;
 
   @ManyToOne(() => User, (user) => user.loginRecords, {
-    cascade: true,
-    nullable: false,
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'userId' })
   user: User;
@@ -42,6 +41,7 @@ export class LoginRecord {
   updateTime: Date;
 }
 
+// todo: delete expired
 @Entity()
 export class LoginFailure {
   @PrimaryGeneratedColumn()

@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
+// todo: delete expired
 @Entity()
 export class SignupToken {
   @PrimaryGeneratedColumn()
