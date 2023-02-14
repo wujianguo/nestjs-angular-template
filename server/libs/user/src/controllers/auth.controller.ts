@@ -39,7 +39,7 @@ export class AuthController {
     type: AuthenticatedUserResponse,
   })
   async login(@Req() req: Request, @Body() body: LoginRequest, @Ip() ip: string): Promise<AuthenticatedUserResponse> {
-    const userAgent = req.headers['user-agent']?.substring(0, 256);
+    const userAgent = req.headers['user-agent']?.substring(0, 256) || '';
     const user = await this.authService.validateLogin(body.login, body.password, userAgent, ip);
     const record = await this.authService.createToken(user, userAgent, ip);
     return mapAuthUser(record.token, user);

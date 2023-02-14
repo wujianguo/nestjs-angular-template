@@ -1,18 +1,15 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Inject, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { createCipheriv, createDecipheriv, createHmac, randomBytes, scrypt } from 'crypto';
 import { promisify } from 'util';
-import { AdminAuthConfig } from '../dto/auth-config.dto';
+import { UserModuleOptionsInternal, USER_OPTIONS } from '../user-module-options.interface';
 
 @Injectable()
 export class SecurityService {
   public readonly tokenSize = 32;
   public readonly codeSize = 6;
-  private readonly config: AdminAuthConfig;
-  constructor(private configService: ConfigService) {
-    this.config = this.configService.get<AdminAuthConfig>('auth');
-  }
+
+  constructor(@Inject(USER_OPTIONS) private config: UserModuleOptionsInternal) {}
 
   async bcryptHash(data: string): Promise<string> {
     return bcrypt.hash(data, 10);

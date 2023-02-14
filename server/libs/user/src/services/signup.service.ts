@@ -1,27 +1,23 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ConfigService } from '@nestjs/config';
 import { MoreThan, Repository } from 'typeorm';
-import { AdminAuthConfig } from '../dto/auth-config.dto';
 import { SignupToken } from '../entities/signup.entity';
 import { SignupProfileDto } from '../dto/signup.dto';
 import { UsersService } from './users.service';
 import { User } from '../entities/user.entity';
 import { SecurityService } from './security.service';
+import { UserModuleOptionsInternal, USER_OPTIONS } from '../user-module-options.interface';
 
 @Injectable()
 export class SignupService {
   private readonly logger = new Logger(SignupService.name);
-  private readonly config: AdminAuthConfig;
 
   constructor(
     @InjectRepository(SignupToken) private signupTokenRepository: Repository<SignupToken>,
-    private configService: ConfigService,
+    @Inject(USER_OPTIONS) private config: UserModuleOptionsInternal,
     private usersService: UsersService,
     private securityService: SecurityService,
-  ) {
-    this.config = this.configService.get<AdminAuthConfig>('auth');
-  }
+  ) {}
 
   async signupVerify(recipient: string): Promise<string> {
     const exist = await this.usersService.exists(recipient);

@@ -1,27 +1,23 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, Not, Repository } from 'typeorm';
 import { UsersService } from './users.service';
 import { User } from '../entities/user.entity';
 import { SecurityService } from './security.service';
 import { LoginFailure, LoginRecord } from '../entities/login-record.entity';
-import { ConfigService } from '@nestjs/config';
-import { AdminAuthConfig } from '../dto/auth-config.dto';
+import { UserModuleOptionsInternal, USER_OPTIONS } from '../user-module-options.interface';
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
-  private readonly config: AdminAuthConfig;
   constructor(
     @InjectRepository(LoginRecord)
     private loginRecordRepository: Repository<LoginRecord>,
     @InjectRepository(LoginFailure)
     private loginFailureRepository: Repository<LoginFailure>,
-    private configService: ConfigService,
+    @Inject(USER_OPTIONS) private config: UserModuleOptionsInternal,
     private securityService: SecurityService,
     private usersService: UsersService,
-  ) {
-    this.config = this.configService.get<AdminAuthConfig>('auth');
-  }
+  ) {}
 
   async validateLogin(login: string, password: string, userAgent: string, ip: string): Promise<User> {
     const limitCount = this.config.authLimitCount;
@@ -41,18 +37,22 @@ export class AuthService {
     return this.validateUser(user, password, userAgent, ip, login);
   }
 
-  async validateUser(user: User, password: string, userAgent: string, ip: string, login = ''): Promise<User> {
+  async validateUser(user: User | null, password: string, userAgent: string, ip: string, login = ''): Promise<User> {
     if (user && user.password) {
       if (await this.securityService.bcryptCompare(password, user.password)) {
         return user;
       }
+    } else {
+      // Security
+      // Run the default password hasher once to reduce the timing difference between an existing and a nonexistent user.
+      await this.securityService.bcryptCompare(
+        password,
+        '$2b$10$Rv7Cmx8EckOedSy/mnEZT.I1tDfcu2hytMCiBC/DqHm5z8W3O3KbG',
+      );
     }
-    // Security
-    // Run the default password hasher once to reduce the timing difference between an existing and a nonexistent user.
-    await this.securityService.bcryptCompare(password, '$2b$10$Rv7Cmx8EckOedSy/mnEZT.I1tDfcu2hytMCiBC/DqHm5z8W3O3KbG');
 
     const entity = new LoginFailure();
-    entity.login = login || user.username;
+    entity.login = login || user?.username || '';
     entity.userAgent = userAgent;
     entity.ip = ip;
     await this.loginFailureRepository.save(entity);

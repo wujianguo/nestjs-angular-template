@@ -40,7 +40,7 @@ export class PasswordController {
     @GetAuthContext() context: AuthContext,
     @Body() body: ChangePasswordRequest,
   ): Promise<void> {
-    const userAgent = req.headers['user-agent']?.substring(0, 256);
+    const userAgent = req.headers['user-agent']?.substring(0, 256) || '';
     await this.authService.validateUser(context.user, body.oldPassword, userAgent, ip);
     await this.usersService.changePassword(context.user, body.newPassword);
     await this.authService.removeTokensExcept(context.token);

@@ -18,39 +18,62 @@ describe('Signout', () => {
   });
 
   describe('success', () => {
+    const username = `usernamesignouts`;
+    const password = `Password1`;
+
+    // afterEach(async () => {
+    //   await client.signout(username, password);
+    // });
+
+    async function success(client2: UserClient, token: string) {
+      const code = context.getVerifyCode();
+      await client2.signoutComplete({ token, code }).expect(204);
+      await client2.profile().expect(401);
+      await client.login({ login: username, password }).expect(400);
+    }
+
     it('email', async () => {
-      const username = `username1`;
-      const recipient = `user$1@example.com`;
-      const password = `Password1`;
+      const recipient = `usersignout@example.com`;
       const resp = await client.register(username, recipient, password);
 
       const client2 = new UserClient(context);
       client2.setToken(resp.token);
       await client2.signoutSmsSend({ password }).expect(400);
       const resp2 = await client2.signoutEmailSend({ password });
+
       const token = resp2.body.token;
-      const code = context.getVerifyCode();
-      await client2.signoutComplete({ token, code }).expect(204);
-      await client2.profile().expect(401);
-      await client.login({ login: username, password }).expect(400);
+      await success(client2, token);
     });
 
     it('phone number', async () => {
-      const username = `username2`;
-      // const recipient = `user$2@example.com`;
       const recipient = `+8618100001234`;
-      const password = `Password1`;
       const resp = await client.register(username, recipient, password);
 
       const client2 = new UserClient(context);
       client2.setToken(resp.token);
       await client2.signoutEmailSend({ password }).expect(400);
       const resp2 = await client2.signoutSmsSend({ password });
+
       const token = resp2.body.token;
-      const code = context.getVerifyCode();
-      await client2.signoutComplete({ token, code }).expect(204);
-      await client2.profile().expect(401);
-      await client.login({ login: username, password }).expect(400);
+      await success(client2, token);
+    });
+  });
+
+  describe('failure', () => {
+    const username = `usernamesignoutf`;
+    const password = `Password1`;
+
+    afterEach(async () => {
+      await client.signout(username, password);
+    });
+
+    it('password error', async () => {
+      const recipient = `usersignout@example.com`;
+      const resp = await client.register(username, recipient, password);
+
+      const client2 = new UserClient(context);
+      client2.setToken(resp.token);
+      await client2.signoutSmsSend({ password: 'Password123' }).expect(400);
     });
   });
 });

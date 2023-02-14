@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from './controllers/auth.controller';
@@ -14,6 +14,19 @@ import { SecurityService } from './services/security.service';
 import { SignupService } from './services/signup.service';
 import { UsersService } from './services/users.service';
 import { BearerStrategy } from './strategies/bearer.strategy';
+import {
+  defaultOptions,
+  generateOptions,
+  UserModuleOptions,
+  UserModuleOptionsInternal,
+  USER_OPTIONS,
+} from './user-module-options.interface';
+import {
+  ConfigurableModuleClass,
+  ASYNC_OPTIONS_TYPE,
+  OPTIONS_TYPE,
+  MODULE_OPTIONS_TOKEN,
+} from './user.module-definition';
 
 @Module({
   imports: [ConfigModule, TypeOrmModule.forFeature([...userEntities])],
@@ -25,6 +38,32 @@ import { BearerStrategy } from './strategies/bearer.strategy';
     SocialController,
     UserController,
   ],
-  providers: [AuthService, SignupService, UsersService, SecurityService, MultiFactorVerifyService, BearerStrategy],
+  providers: [
+    AuthService,
+    SignupService,
+    UsersService,
+    SecurityService,
+    MultiFactorVerifyService,
+    BearerStrategy,
+    {
+      provide: USER_OPTIONS,
+      useFactory: (options: UserModuleOptions): UserModuleOptionsInternal => {
+        return generateOptions(options);
+      },
+      inject: [MODULE_OPTIONS_TOKEN],
+    },
+  ],
 })
-export class UserModule {}
+export class UserModule extends ConfigurableModuleClass {
+  static forRoot(options: typeof OPTIONS_TYPE = defaultOptions): DynamicModule {
+    return {
+      ...super.forRoot(options),
+    };
+  }
+
+  static forRootAsync(options: typeof ASYNC_OPTIONS_TYPE = {}): DynamicModule {
+    return {
+      ...super.forRootAsync(options),
+    };
+  }
+}

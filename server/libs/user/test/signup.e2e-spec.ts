@@ -4,6 +4,7 @@ import { UserClient } from './common/client';
 describe('Signup', () => {
   let context: AppContext;
   let client: UserClient;
+  const password = 'passworD123*x';
 
   beforeAll(async () => {
     context = await new AppContext().build();
@@ -18,33 +19,20 @@ describe('Signup', () => {
   });
 
   describe('success', () => {
-    async function expectSuccess(token: string) {
-      expect(token.length).toBeGreaterThan(10);
-      const code = context.getVerifyCode();
-      const verifyResp = await client.signupVerify({ token: token, code: code }).expect(200);
-      const username = 'myname' + token.substring(0, 4);
-      const body = {
-        token: verifyResp.body.token,
-        username: username,
-        password: 'passworD123*x',
-      };
-      const resp = await client.signupComplete(body).expect(201);
-      expect(resp.body.username).toBe(username);
-
-      const client2 = new UserClient(context);
-      client2.setToken(resp.body.token);
-      const profile = await client2.profile().expect(200);
-      expect(profile.body.username).toBe(username);
-    }
+    const username = 'username123';
 
     it('email', async () => {
-      const resp = await client.signupEmailSend({ email: 'test@example.com' }).expect(201);
-      await expectSuccess(resp.body.token);
+      const email = 'test@example.com';
+      const resp = await client.register(username, email, password);
+      expect(resp.email?.length).toBeGreaterThan(0);
+      await client.signout(username, password);
     });
 
     it('phone number', async () => {
-      const resp = await client.signupSmsSend({ phoneNumber: '+8617200001234' }).expect(201);
-      await expectSuccess(resp.body.token);
+      const phoneNumber = '+8617200001234';
+      const resp = await client.register(username, phoneNumber, password);
+      expect(resp.phoneNumber?.length).toBeGreaterThan(0);
+      await client.signout(username, password);
     });
   });
 
@@ -70,10 +58,11 @@ describe('Signup', () => {
     }
 
     it('send too often', async () => {
-      await client.signupEmailSend({ email: 'testsend@example.com' }).expect(201);
-      await client.signupEmailSend({ email: 'testsend@example.com' }).expect(429);
+      const email = 'test1@example.com';
+      await client.signupEmailSend({ email }).expect(201);
+      await client.signupEmailSend({ email }).expect(429);
       await new Promise((r) => setTimeout(r, 3000));
-      await client.signupEmailSend({ email: 'testsend@example.com' }).expect(201);
+      await client.signupEmailSend({ email }).expect(201);
     }, 100000);
 
     it('invalid email', async () => {
@@ -141,7 +130,6 @@ describe('Signup', () => {
       await signupComplete(token.substring(0, 32) + token.substring(0, 68) + '01', 400);
       await signupComplete(token.substring(0, 32) + token.substring(0, 68) + '02', 400);
       await signupComplete(token.substring(0, 32) + token.substring(0, 68) + '03', 400);
-      // await signupComplete(token, 201);
       await signupComplete(token, 400);
 
       const resp2 = await client.signupEmailSend({ email: 'test1234yzx@example.com' }).expect(201);
@@ -180,54 +168,22 @@ describe('Signup', () => {
   });
 
   describe('user', () => {
-    async function signupWith(
-      email: string,
-      phoneNumber: string,
-      username: string,
-      password: string,
-      statusCode: number,
-    ) {
-      let token = '';
-      if (email) {
-        const resp = await client.signupEmailSend({ email }).expect(201);
-        token = resp.body.token;
-      } else if (phoneNumber) {
-        const resp = await client.signupSmsSend({ phoneNumber }).expect(201);
-        token = resp.body.token;
-      }
-      const code = context.getVerifyCode();
-      const verifyResp = await client.signupVerify({ token: token, code: code }).expect(200);
-      const body = {
-        token: verifyResp.body.token,
-        username: username,
-        password: password,
-      };
-      await client.signupComplete(body).expect(statusCode);
-    }
-
-    async function signup(username: string, password: string, statusCode: number) {
-      await signupWith(username + 'test@example.com', '', username, password, statusCode);
-    }
-
     it('username contains only letters and numbers', async () => {
-      const password = 'Aabcd123*&^';
-      await signup('aA1234', password, 201);
-      await signup('_aA1234', password, 400);
-      await signup('aA1*234', password, 400);
-      await signup('aA1-234', password, 400);
+      const email = 'aA1234ytest0@example.com';
+      await client.register('aA1234y', email, password, 201);
+      await client.register('_aA1234', '1' + email, password, 400);
+      await client.register('aA1*234', '2' + email, password, 400);
+      await client.register('aA1-234', '3' + email, password, 400);
     });
 
     it('username should be unique', async () => {
-      const password = 'Aabcd123*&^';
-      await signupWith('aA1234ytest@example.com', '', 'aA1234y', password, 201);
-      await signupWith('aA1234ytest2@example.com', '', 'aA1234y', password, 400);
+      await client.register('aA1234y1', 'aA1234ytest1@example.com', password, 201);
+      await client.register('aA1234y1', 'aA1234ytest2@example.com', password, 400);
     });
 
     it('email should be unique', async () => {
-      const email = 'testxyzabce@example.com';
-      const password = 'Aabcd123*&^';
-      await signupWith(email, '', 'aA123411', password, 201);
-      // await signupWith(email, '', 'aA123411xx', password, 400);
+      const email = 'aA1234ytest3@example.com';
+      await client.register('aA1234y2', email, password, 201);
       const resp = await client.signupEmailSend({ email }).expect(201);
       const code = context.getVerifyCode();
       await client.signupVerify({ token: resp.body.token, code: code }).expect(400);
@@ -235,23 +191,26 @@ describe('Signup', () => {
 
     it('phone number should be unique', async () => {
       const phoneNumber = '+8617700001236';
-      const password = 'Aabcd123*&^';
-      await signupWith('', phoneNumber, 'aA123412', password, 201);
-      // await signupWith('', phoneNumber, 'aA123412xx', password, 400);
+      await client.register('aA1234y24', phoneNumber, password, 201);
       const resp = await client.signupSmsSend({ phoneNumber }).expect(201);
       const code = context.getVerifyCode();
       await client.signupVerify({ token: resp.body.token, code: code }).expect(400);
     });
 
     it('password should contains (uppercase letters && lowercase letters && (numbers || punctuation and special characters))', async () => {
-      const username = 'aA1234x';
-      await signup(username + '1', 'passwordABC123*&^', 201);
-      await signup(username + '2', 'passwordABC123', 201);
-      await signup(username + '3', 'passwordABC*&^', 201);
-      await signup(username + '4', 'passwordABC*&^', 201);
-      await signup(username + '5', 'password123*&^', 400);
-      await signup(username + '6', 'ABC123*&^', 400);
-      await signup(username + '7', 'ABC', 400);
+      const username = 'aA1234y';
+      const email = 'aA1234ytest01@example.com';
+      await client.register(username + '10', '10' + email, 'abcABC123*&^', 201);
+      await client.register(username + '11', '11' + email, 'abcABC123', 201);
+      await client.register(username + '12', '12' + email, 'abcABC*&^', 201);
+      await client.register(username + '13', '13' + email, 'ABC123*&^', 400);
+      await client.register(username + '14', '14' + email, 'abc123*&^', 400);
+      await client.register(username + '15', '15' + email, '123*&^', 400);
+      await client.register(username + '15', '15' + email, 'abcdefg', 400);
+      await client.register(username + '15', '15' + email, 'ABCDEFG', 400);
+      await client.register(username + '15', '15' + email, '1234567', 400);
+      await client.register(username + '15', '15' + email, '*******', 400);
+      await client.register(username + '15', '15' + email, 'aA1', 400);
     }, 100000);
   });
 });

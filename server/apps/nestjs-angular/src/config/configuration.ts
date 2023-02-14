@@ -1,4 +1,3 @@
-import { parseConfig, AdminAuthConfig } from '@app/user';
 import { readFileSync } from 'fs';
 import * as yaml from 'js-yaml';
 import { join } from 'path';
@@ -19,7 +18,6 @@ export interface CommonConfig {
 export interface Configuration {
   common: CommonConfig;
   db: DatabaseConfig;
-  auth: AdminAuthConfig;
 }
 
 const YAML_CONFIG_FILENAME = process.env.CONFIG_FILE || 'config/config.yaml';
@@ -35,10 +33,8 @@ export const loadConfig = (): Configuration => {
       database: conf.db.sqlite.database,
     },
   };
-  const auth = parseConfig(conf.auth as Record<string, any>);
   return {
     common: common,
     db: database,
-    auth: auth,
   };
 };

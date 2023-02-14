@@ -104,8 +104,12 @@ export class UsersService {
 
     const entity = new User();
     entity.username = profile.username;
-    entity.firstName = profile.firstName;
-    entity.lastName = profile.lastName;
+    if (profile.firstName) {
+      entity.firstName = profile.firstName;
+    }
+    if (profile.lastName) {
+      entity.lastName = profile.lastName;
+    }
     entity.password = '';
     if (profile.password) {
       entity.password = await this.securityService.bcryptHash(profile.password);
@@ -122,18 +126,20 @@ export class UsersService {
       exception = this.loginExistsException(email);
     }
     if (phoneNumber) {
-      entity.desensitizedEmail = this.desensitizePhoneNumber(phoneNumber);
+      entity.desensitizedPhoneNumber = this.desensitizePhoneNumber(phoneNumber);
       entity.encryptedPhoneNumber = await this.encrypt(phoneNumber, entity.password, entity.iv);
       entity.hashedPhoneNumber = this.securityService.hmac(phoneNumber);
       where.push({ hashedPhoneNumber: entity.hashedPhoneNumber });
       exception = this.loginExistsException(phoneNumber);
     }
 
-    let user: User;
+    let user!: User;
     await this.dataSource.transaction(async (transactionalEntityManager) => {
       const exist2 = await transactionalEntityManager.exists(User, { where });
       if (exist2) {
-        this.logger.error(`email/phone (${email}${phoneNumber}) exists`);
+        const desensitizeEmail = this.desensitizeEmail(email || '');
+        const desensitizePhoneNumber = this.desensitizePhoneNumber(phoneNumber || '');
+        this.logger.error(`email/phone (${desensitizeEmail}${desensitizePhoneNumber}) exists`);
         throw exception;
       }
       const record = this.usersRepository.create(entity);
@@ -171,6 +177,6 @@ export class UsersService {
 
   async remove(user: User): Promise<void> {
     // todo: remove relations
-    this.usersRepository.remove(user);
+    await this.usersRepository.remove(user);
   }
 }
