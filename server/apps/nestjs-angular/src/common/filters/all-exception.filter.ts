@@ -45,7 +45,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       this.logger.error(exception);
       let message = '';
       try {
-        message = exception.toString();
+        message = (exception as Error).toString();
       } catch (error) {
         message = 'Internal server error';
       }

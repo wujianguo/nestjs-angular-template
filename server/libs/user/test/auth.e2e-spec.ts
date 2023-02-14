@@ -94,7 +94,7 @@ describe('Auth', () => {
       await client.login({ login: username, password: '123456' }).expect(400);
       await client.login({ login: username, password: '123456' }).expect(400);
       await client.login({ login: username, password }).expect(429);
-      await new Promise((r) => setTimeout(r, 5000));
+      await new Promise((r) => setTimeout(r, 6000));
       await client.login({ login: username, password }).expect(200);
     }, 100000);
 

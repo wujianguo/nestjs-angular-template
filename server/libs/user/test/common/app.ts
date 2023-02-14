@@ -1,26 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmailMessage, EmailModule, LocmemEmailAdapter, LocmemSmsAdapter, SmsMessage, SmsModule } from '@app/message';
 import { UserModule } from '../../src/user.module';
 import { userEntities } from '../../src/entities/entities';
-
-export const loadConfig = () => {
-  const auth = {
-    deviceNumberLimit: 3,
-    sendLimitTime: 3,
-    signupExpireTime: 5,
-    codeExpireTime: 5,
-    codeVerifyMaxCount: 4,
-    securityKey: '902hshqyjcoh5tyap2lx5uttt8m80tvg',
-    authLimitCount: 3,
-    authLimitTime: 5,
-  };
-  return {
-    auth: auth,
-  };
-};
 
 export class AppContext {
   app: INestApplication;
@@ -32,9 +15,6 @@ export class AppContext {
     this.smsAdapter = new LocmemSmsAdapter();
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
-        ConfigModule.forRoot({
-          load: [loadConfig],
-        }),
         TypeOrmModule.forRoot({
           type: 'sqlite',
           database: ':memory:',
@@ -42,7 +22,14 @@ export class AppContext {
           synchronize: true,
         }),
         TypeOrmModule.forFeature([...userEntities]),
-        UserModule,
+        UserModule.forRoot({
+          securityKey: 'xyz',
+          sendLimitTime: 3,
+          codeExpireTime: 3,
+          signupExpireTime: 3,
+          codeVerifyMaxCount: 4,
+          authLimitTime: 5,
+        }),
         EmailModule.forRoot({ adapter: this.emailAdapter }),
         SmsModule.forRoot({ adapter: this.smsAdapter }),
       ],
@@ -83,8 +70,11 @@ export class AppContext {
     } else if (lastSmsMessage) {
       msg = lastSmsMessage.message;
     }
-    const code = rexp.exec(msg)[0];
-    return code;
+    const codes = rexp.exec(msg);
+    if (codes && codes.length > 0) {
+      return codes[0];
+    }
+    return '';
   }
 
   randomString(characters: string, length: number): string {

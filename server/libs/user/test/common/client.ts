@@ -5,6 +5,7 @@ import { AuthenticatedUserResponse, UpdateUserRequest } from '../../src/dto/user
 import { LoginRequest } from '../../src/dto/login.dto';
 import { ChangePasswordRequest, PasswordRequest, ResetPasswordRequest } from '../../src/dto/password.dto';
 import { AppContext } from './app';
+import { never } from 'rxjs';
 
 export class UserClient {
   private context: AppContext;
@@ -36,39 +37,39 @@ export class UserClient {
     return `${prefix}${path}?${new URLSearchParams(query).toString()}`;
   }
 
-  get(path: string, query: { [key: string]: any } = {}) {
+  setRequestToken(req: request.Request, token = '') {
+    if (token) {
+      return req.set('Authorization', `Bearer ${token}`);
+    } else if (this.token) {
+      return req.set('Authorization', `Bearer ${this.token}`);
+    }
+  }
+
+  get(path: string, query: { [key: string]: any } = {}, token = '') {
     const uri = this.url(path, query);
     const req = request(this.context.app.getHttpServer()).get(uri);
-    if (this.token) {
-      return req.set('Authorization', `Bearer ${this.token}`);
-    }
+    this.setRequestToken(req, token);
     return req;
   }
 
-  post(path: string, query: { [key: string]: any } = {}, data: any = null) {
+  post(path: string, query: { [key: string]: any } = {}, data: any = null, token = '') {
     const uri = this.url(path, query);
     const req = request(this.context.app.getHttpServer()).post(uri).send(data);
-    if (this.token) {
-      return req.set('Authorization', `Bearer ${this.token}`);
-    }
+    this.setRequestToken(req, token);
     return req;
   }
 
-  patch(path: string, query: { [key: string]: any } = {}, data: any = null) {
+  patch(path: string, query: { [key: string]: any } = {}, data: any = null, token = '') {
     const uri = this.url(path, query);
     const req = request(this.context.app.getHttpServer()).patch(uri).send(data);
-    if (this.token) {
-      return req.set('Authorization', `Bearer ${this.token}`);
-    }
+    this.setRequestToken(req, token);
     return req;
   }
 
-  delete(path: string, query: { [key: string]: any } = {}) {
+  delete(path: string, query: { [key: string]: any } = {}, token = '') {
     const uri = this.url(path, query);
     const req = request(this.context.app.getHttpServer()).delete(uri);
-    if (this.token) {
-      return req.set('Authorization', `Bearer ${this.token}`);
-    }
+    this.setRequestToken(req, token);
     return req;
   }
 
@@ -132,7 +133,12 @@ export class UserClient {
     return this.post('auth/password/reset/complete', {}, body);
   }
 
-  async register(username: string, recipient: string, password: string): Promise<AuthenticatedUserResponse> {
+  async register(
+    username: string,
+    recipient: string,
+    password: string,
+    statusCode = 201,
+  ): Promise<AuthenticatedUserResponse> {
     let token = '';
     if (recipient[0] === '+') {
       token = (await this.signupSmsSend({ phoneNumber: recipient })).body.token;
@@ -147,9 +153,26 @@ export class UserClient {
       username: username,
       password: password,
     };
-    // const respx = await this.signupComplete(body);
-    // console.log(respx.body);
-    const resp = await this.signupComplete(body).expect(201);
+    const resp = await this.signupComplete(body).expect(statusCode);
     return resp.body;
+  }
+
+  async signout(login: string, password: string, statusCode = 204) {
+    const client = new UserClient(this.context);
+    const resp1 = await client.login({ login, password }).expect(200);
+    const accessToken = resp1.body.token;
+    client.setToken(accessToken);
+    let resp: request.Response;
+    if (resp1.body.email) {
+      resp = await client.signoutEmailSend({ password }).expect(201);
+    } else if (resp1.body.phoneNumber) {
+      resp = await client.signoutSmsSend({ password }).expect(201);
+    } else {
+      expect(false).toBe(true);
+      return;
+    }
+    const token = resp.body.token;
+    const code = this.context.getVerifyCode();
+    await client.signoutComplete({ token, code }).expect(statusCode);
   }
 }
