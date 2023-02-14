@@ -5,7 +5,6 @@ import { AuthenticatedUserResponse, UpdateUserRequest } from '../../src/dto/user
 import { LoginRequest } from '../../src/dto/login.dto';
 import { ChangePasswordRequest, PasswordRequest, ResetPasswordRequest } from '../../src/dto/password.dto';
 import { AppContext } from './app';
-import { never } from 'rxjs';
 
 export class UserClient {
   private context: AppContext;
