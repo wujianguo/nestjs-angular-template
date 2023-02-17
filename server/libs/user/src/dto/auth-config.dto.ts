@@ -13,18 +13,18 @@ class SmsAuthConfig {
   enable: boolean;
 }
 
-export enum SocialAuthType {
-  Dingtalk = 'dingtalk',
-  Feishu = 'feishu',
-  Github = 'github',
-  Gitlab = 'gitlab',
-  Slack = 'slack',
-  Wecom = 'wecom',
-}
+// export enum SocialAuthType {
+//   Dingtalk = 'dingtalk',
+//   Feishu = 'feishu',
+//   Github = 'github',
+//   Gitlab = 'gitlab',
+//   Slack = 'slack',
+//   Wecom = 'wecom',
+// }
 
-class SocialAuthConfig {
-  @ApiProperty({ enum: SocialAuthType })
-  type: SocialAuthType;
+export class SocialAuthConfig {
+  @ApiProperty()
+  provider: string;
 
   @ApiProperty()
   name: string;
@@ -32,8 +32,8 @@ class SocialAuthConfig {
   @ApiProperty({ format: 'url' })
   logo: string;
 
-  @ApiProperty({ format: 'url' })
-  authURL: string;
+  // @ApiProperty({ format: 'url' })
+  // authURL: string;
 }
 
 export class AuthConfig {

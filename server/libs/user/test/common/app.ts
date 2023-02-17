@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmailMessage, EmailModule, LocmemEmailAdapter, LocmemSmsAdapter, SmsMessage, SmsModule } from '@app/message';
 import { UserModule } from '../../src/user.module';
 import { userEntities } from '../../src/entities/entities';
+import { MockAdapter } from './social-mock.adapter';
 
 export class AppContext {
   app: INestApplication;
@@ -29,6 +30,7 @@ export class AppContext {
           signupExpireTime: 3,
           codeVerifyMaxCount: 4,
           authLimitTime: 5,
+          socials: [new MockAdapter()],
         }),
         EmailModule.forRoot({ adapter: this.emailAdapter }),
         SmsModule.forRoot({ adapter: this.smsAdapter }),

@@ -29,7 +29,17 @@ import { CommonConfig, DatabaseConfig, loadConfig } from './config/configuration
       }),
       inject: [ConfigService],
     }),
-    UserModule.forRoot(),
+    UserModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => {
+        const auth = configService.get('auth');
+        return {
+          securityKey: auth.security,
+          socials: auth.socials,
+        };
+      },
+      inject: [ConfigService],
+    }),
     EmailModule.forRoot(),
     SmsModule.forRoot(),
   ],

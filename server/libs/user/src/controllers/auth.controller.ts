@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Delete, HttpCode, Req, Ip, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Delete, HttpCode, Req, Ip, UseGuards, Inject } from '@nestjs/common';
+// todo: Request type
 import { Request } from 'express';
 import {
   ApiBadRequestResponse,
@@ -15,17 +16,27 @@ import { AuthConfig } from '../dto/auth-config.dto';
 import { AuthService } from '../services/auth.service';
 import { BearerAuthGuard } from '../strategies/bearer.strategy';
 import { AuthContext, GetAuthContext } from '../decorators/auth-user.decorator';
+import { UserModuleOptionsInternal, USER_OPTIONS } from '../user-module-options.interface';
+import { SocialService } from '../services/social.service';
 
 @Controller('auth')
 @ApiTags('Authentication')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly socialService: SocialService,
+    @Inject(USER_OPTIONS) private config: UserModuleOptionsInternal,
+  ) {}
 
   @Get('config')
   @ApiOperation({ summary: 'Get user auth config' })
   @ApiOkResponse({ description: 'User auth config', type: AuthConfig })
-  config(): AuthConfig {
-    return new AuthConfig();
+  getConfig(): AuthConfig {
+    const conf = new AuthConfig();
+    conf.email = { enable: true, domain: '' };
+    conf.sms = { enable: true };
+    conf.socials = this.socialService.getPublicSocialAuthConfig('en');
+    return conf;
   }
 
   @Post('login')

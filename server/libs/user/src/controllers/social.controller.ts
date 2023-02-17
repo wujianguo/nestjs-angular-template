@@ -1,4 +1,18 @@
-import { Controller, Get, Post, Body, HttpCode, Param, ParseEnumPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  HttpCode,
+  Param,
+  UseGuards,
+  Ip,
+  Req,
+  Delete,
+  Query,
+  ParseEnumPipe,
+} from '@nestjs/common';
+import { Request } from 'express';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -6,43 +20,81 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
+  ApiResponse,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-// import { UserService } from '../services/user.service';
-import { SocialAuthCode, SocialAuthResponse, SocialAuthURL, SocialConnectionResponse } from '../dto/social.dto';
-import { SocialAuthType } from '../dto/auth-config.dto';
+import {
+  SocialAuthCode,
+  SocialAuthResponse,
+  SocialAuthType,
+  SocialAuthURL,
+  SocialConnectionResponse,
+} from '../dto/social.dto';
+import { mapAuthUser } from '../dto/user.dto';
+import { SocialService } from '../services/social.service';
+import { UsersService } from '../services/users.service';
+import { AuthService } from '../services/auth.service';
+import { BearerAuthGuard } from '../strategies/bearer.strategy';
+import { AuthContext, GetAuthContext } from '../decorators/auth-user.decorator';
+import { SignupService } from '../services/signup.service';
 
 @Controller('auth/social')
 @ApiTags('Authentication')
 export class SocialController {
-  // constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly socialService: SocialService,
+    private readonly signupService: SignupService,
+    private readonly usersService: UsersService,
+  ) {}
 
+  @UseGuards(BearerAuthGuard)
   @Get('connections')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get my social connections.' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiOkResponse({ description: 'Social connections', type: [SocialConnectionResponse] })
-  socialConnections(): SocialConnectionResponse[] {
-    return [];
+  async socialConnections(@GetAuthContext() context: AuthContext): Promise<SocialConnectionResponse[]> {
+    const socialAccounts = await this.usersService.findSocialConnections(context.user);
+    const socials = this.socialService.getPublicSocialAuthConfig();
+    return socials.map((data) => {
+      const accounts = socialAccounts.filter((item) => {
+        return item.provider === data.provider;
+      });
+      const account = accounts.length > 0 ? accounts[0] : null;
+      return {
+        provider: data.provider,
+        name: data.name,
+        logo: data.logo,
+        connected: account ? true : false,
+        socialUser: account
+          ? { nickname: account.nickname, avatar: account.avatar, createTime: account.createTime }
+          : undefined,
+      };
+    });
   }
 
   @Get(':provider/url')
   @ApiOperation({ summary: 'Get social auth URL.' })
-  @ApiParam({ name: 'provider', enum: SocialAuthType })
-  @ApiOkResponse({ description: 'Social auth URL', type: SocialAuthURL })
+  @ApiParam({ name: 'provider' })
+  @ApiQuery({ name: 'type', enum: SocialAuthType })
+  @ApiResponse({ status: 302, description: 'Social auth URL' })
   authURL(
-    @Param('provider', new ParseEnumPipe(SocialAuthType))
-    provider: SocialAuthType,
+    @Req() req: Request,
+    @Param('provider') provider: string,
+    @Query('type', new ParseEnumPipe(SocialAuthType)) type: SocialAuthType,
   ): SocialAuthURL {
-    console.log(provider);
-    return new SocialAuthURL();
+    const userAgent = req.headers['user-agent']?.substring(0, 256) || '';
+    const url = this.socialService.authorizationURL(provider, userAgent, type);
+    return { url: url };
   }
 
   @Post(':provider/auth')
   @HttpCode(200)
   @ApiOperation({ summary: 'Auth by social.' })
-  @ApiParam({ name: 'provider', enum: SocialAuthType })
+  @ApiParam({ name: 'provider' })
   @ApiBadRequestResponse({
     description: 'Code is invalid',
   })
@@ -50,45 +102,53 @@ export class SocialController {
     description: 'Response a logged user or a signup token.',
     type: SocialAuthResponse,
   })
-  auth(
-    @Param('provider', new ParseEnumPipe(SocialAuthType))
-    provider: SocialAuthType,
+  async auth(
+    @Param('provider') provider: string,
+    @Req() req: Request,
     @Body() body: SocialAuthCode,
-  ): SocialAuthResponse {
-    console.log(provider);
-    console.log(body);
-    return new SocialAuthResponse();
+    @Ip() ip: string,
+  ): Promise<SocialAuthResponse> {
+    // todo: transaction
+    const socialUser = await this.socialService.auth(provider, body.code, body.state);
+    const user = await this.usersService.findBySocial(provider, socialUser.identifier);
+    const ret = new SocialAuthResponse();
+    if (user) {
+      const userAgent = req.headers['user-agent']?.substring(0, 256) || '';
+      const record = await this.authService.createToken(user, userAgent, ip);
+      ret.user = mapAuthUser(record.token, user);
+    } else {
+      const token = await this.signupService.createSignupToken(`#${socialUser.identifier}`, provider, socialUser);
+      ret.signupToken = token;
+    }
+    return ret;
   }
 
+  @UseGuards(BearerAuthGuard)
   @Post(':provider/connect')
   @HttpCode(204)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Connect social account.' })
-  @ApiParam({ name: 'provider', enum: SocialAuthType })
+  @ApiParam({ name: 'provider' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiNoContentResponse({ description: 'Success' })
-  connect(
-    @Param('provider', new ParseEnumPipe(SocialAuthType))
-    provider: SocialAuthType,
+  async connect(
+    @Param('provider') provider: string,
+    @GetAuthContext() context: AuthContext,
     @Body() body: SocialAuthCode,
   ) {
-    console.log(provider);
-    console.log(body);
+    const socialUser = await this.socialService.auth(provider, body.code, body.state);
+    await this.usersService.connectSocial(context.user, provider, socialUser);
   }
 
-  @Post(':provider/disconnect')
+  @UseGuards(BearerAuthGuard)
+  @Delete(':provider/disconnect')
   @HttpCode(204)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Disconnect social account.' })
-  @ApiParam({ name: 'provider', enum: SocialAuthType })
+  @ApiParam({ name: 'provider' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiNoContentResponse({ description: 'Success' })
-  disconnect(
-    @Param('provider', new ParseEnumPipe(SocialAuthType))
-    provider: SocialAuthType,
-    @Body() body: SocialAuthCode,
-  ) {
-    console.log(provider);
-    console.log(body);
+  async disconnect(@Param('provider') provider: string, @GetAuthContext() context: AuthContext) {
+    await this.usersService.disconnectSocial(context.user, provider);
   }
 }

@@ -5,6 +5,8 @@ import { SignupProfileDto } from '../dto/signup.dto';
 import { UpdateUserRequest } from '../dto/user.dto';
 import { User } from '../entities/user.entity';
 import { SecurityService } from './security.service';
+import { SocialUser } from '../user-module-options.interface';
+import { SocialAccount } from '../entities/social-account.entity';
 
 @Injectable()
 export class UsersService {
@@ -13,6 +15,8 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(SocialAccount)
+    private socialAccountRepository: Repository<SocialAccount>,
     private securityService: SecurityService,
     private dataSource: DataSource,
   ) {}
@@ -95,7 +99,46 @@ export class UsersService {
     }
   }
 
-  async create(profile: SignupProfileDto, email?: string, phoneNumber?: string): Promise<User> {
+  async setEmail(
+    entity: User,
+    email: string,
+    hashedPassword: string,
+  ): Promise<{ desensitizedEmail: string; encryptedEmail: string; hashedEmail: string }> {
+    const desensitizedEmail = this.desensitizeEmail(email);
+    const encryptedEmail = await this.encrypt(email, hashedPassword, entity.iv);
+    const hashedEmail = this.securityService.hmac(email);
+    return { desensitizedEmail, encryptedEmail, hashedEmail };
+  }
+
+  async setPhoneNumber(
+    entity: User,
+    phoneNumber: string,
+    hashedPassword: string,
+  ): Promise<{ desensitizedPhoneNumber: string; encryptedPhoneNumber: string; hashedPhoneNumber: string }> {
+    const desensitizedPhoneNumber = this.desensitizePhoneNumber(phoneNumber);
+    const encryptedPhoneNumber = await this.encrypt(phoneNumber, hashedPassword, entity.iv);
+    const hashedPhoneNumber = this.securityService.hmac(phoneNumber);
+    return { desensitizedPhoneNumber, encryptedPhoneNumber, hashedPhoneNumber };
+  }
+
+  createSocialAccount(user: User, provider: string, socialUser: SocialUser): SocialAccount {
+    const social = new SocialAccount();
+    social.provider = provider;
+    social.identifier = socialUser.identifier;
+    social.nickname = socialUser.nickname;
+    social.avatar = socialUser.avatar || '';
+    social.extraData = socialUser.origin || {};
+    social.user = user;
+    return social;
+  }
+
+  async create(
+    profile: SignupProfileDto,
+    email?: string,
+    phoneNumber?: string,
+    socialProvider?: string,
+    socialUser?: SocialUser,
+  ): Promise<User> {
     const exist1 = await this.usersRepository.exist({ where: { username: profile.username } });
     if (exist1) {
       this.logger.error(`username(${profile.username}) exists`);
@@ -119,16 +162,18 @@ export class UsersService {
     const where: FindOptionsWhere<User>[] = [{ username: entity.username }];
     let exception: BadRequestException;
     if (email) {
-      entity.desensitizedEmail = this.desensitizeEmail(email);
-      entity.encryptedEmail = await this.encrypt(email, entity.password, entity.iv);
-      entity.hashedEmail = this.securityService.hmac(email);
+      const emailMeta = await this.setEmail(entity, email, entity.password);
+      entity.encryptedEmail = emailMeta.encryptedEmail;
+      entity.hashedEmail = emailMeta.hashedEmail;
+      entity.desensitizedEmail = emailMeta.desensitizedEmail;
       where.push({ hashedEmail: entity.hashedEmail });
       exception = this.loginExistsException(email);
     }
     if (phoneNumber) {
-      entity.desensitizedPhoneNumber = this.desensitizePhoneNumber(phoneNumber);
-      entity.encryptedPhoneNumber = await this.encrypt(phoneNumber, entity.password, entity.iv);
-      entity.hashedPhoneNumber = this.securityService.hmac(phoneNumber);
+      const phoneNumberMeta = await this.setPhoneNumber(entity, phoneNumber, entity.password);
+      entity.encryptedPhoneNumber = phoneNumberMeta.encryptedPhoneNumber;
+      entity.hashedPhoneNumber = phoneNumberMeta.hashedPhoneNumber;
+      entity.desensitizedPhoneNumber = phoneNumberMeta.desensitizedPhoneNumber;
       where.push({ hashedPhoneNumber: entity.hashedPhoneNumber });
       exception = this.loginExistsException(phoneNumber);
     }
@@ -144,6 +189,10 @@ export class UsersService {
       }
       const record = this.usersRepository.create(entity);
       user = await transactionalEntityManager.save(record);
+      if (socialProvider && socialUser) {
+        const social = this.createSocialAccount(user, socialProvider, socialUser);
+        await transactionalEntityManager.save(social);
+      }
     });
     return user;
   }
@@ -154,6 +203,36 @@ export class UsersService {
 
   async findOne(login: string): Promise<User | null> {
     return this.usersRepository.findOneBy(this.where(login));
+  }
+
+  async findBySocial(provider: string, identifier: string): Promise<User | null> {
+    const social = await this.socialAccountRepository.findOne({
+      where: { provider: provider, identifier: identifier },
+      relations: { user: true },
+    });
+    return social?.user || null;
+  }
+
+  async findSocialConnections(user: User): Promise<SocialAccount[]> {
+    return await this.socialAccountRepository.find({ where: { userId: user.id } });
+  }
+
+  async connectSocial(user: User, provider: string, socialUser: SocialUser): Promise<SocialAccount> {
+    return await this.dataSource.transaction(async (transactionalEntityManager) => {
+      const socialAccount = await transactionalEntityManager.findOneBy(SocialAccount, {
+        provider: provider,
+        identifier: socialUser.identifier,
+      });
+      if (socialAccount) {
+        throw new BadRequestException('This social user has already be connected.');
+      }
+      const social = this.createSocialAccount(user, provider, socialUser);
+      return await transactionalEntityManager.save(social);
+    });
+  }
+
+  async disconnectSocial(user: User, provider: string) {
+    await this.socialAccountRepository.delete({ provider: provider, userId: user.id });
   }
 
   async update(user: User, dto: UpdateUserRequest): Promise<User> {
@@ -170,9 +249,56 @@ export class UsersService {
     return user;
   }
 
+  async updateEmail(user: User, email: string): Promise<void> {
+    const emailMeta = await this.setEmail(user, email, user.password);
+    const update: Partial<User> = {};
+    update.encryptedEmail = emailMeta.encryptedEmail;
+    update.hashedEmail = emailMeta.hashedEmail;
+    update.desensitizedEmail = emailMeta.desensitizedEmail;
+    return await this.dataSource.transaction(async (transactionalEntityManager) => {
+      if (await transactionalEntityManager.exists(User, { where: { hashedEmail: emailMeta.hashedEmail } })) {
+        throw this.loginExistsException(email);
+      }
+      await transactionalEntityManager.update(User, { id: user.id }, update);
+    });
+  }
+
+  async updatePhoneNumber(user: User, phoneNumber: string): Promise<void> {
+    const phoneNumberMeta = await this.setPhoneNumber(user, phoneNumber, user.password);
+    const update: Partial<User> = {};
+    update.encryptedPhoneNumber = phoneNumberMeta.encryptedPhoneNumber;
+    update.hashedPhoneNumber = phoneNumberMeta.hashedPhoneNumber;
+    update.desensitizedPhoneNumber = phoneNumberMeta.desensitizedPhoneNumber;
+    return await this.dataSource.transaction(async (transactionalEntityManager) => {
+      if (
+        await transactionalEntityManager.exists(User, {
+          where: { hashedPhoneNumber: phoneNumberMeta.hashedPhoneNumber },
+        })
+      ) {
+        throw this.loginExistsException(phoneNumber);
+      }
+      await transactionalEntityManager.update(User, { id: user.id }, update);
+    });
+  }
+
   async changePassword(user: User, newPassword: string): Promise<void> {
     const password = await this.securityService.bcryptHash(newPassword);
-    await this.usersRepository.update({ id: user.id }, { password });
+    const update: Partial<User> = { password: password };
+    if (user.encryptedEmail) {
+      const email = await this.email(user);
+      const emailMeta = await this.setEmail(user, email, password);
+      update.encryptedEmail = emailMeta.encryptedEmail;
+      update.hashedEmail = emailMeta.hashedEmail;
+      update.desensitizedEmail = emailMeta.desensitizedEmail;
+    }
+    if (user.encryptedPhoneNumber) {
+      const phoneNumber = await this.phoneNumber(user);
+      const phoneNumberMeta = await this.setPhoneNumber(user, phoneNumber, password);
+      update.encryptedPhoneNumber = phoneNumberMeta.encryptedPhoneNumber;
+      update.hashedPhoneNumber = phoneNumberMeta.hashedPhoneNumber;
+      update.desensitizedPhoneNumber = phoneNumberMeta.desensitizedPhoneNumber;
+    }
+    await this.usersRepository.update({ id: user.id }, update);
   }
 
   async remove(user: User): Promise<void> {

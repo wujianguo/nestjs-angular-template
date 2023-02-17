@@ -5,6 +5,7 @@ import { AuthenticatedUserResponse, UpdateUserRequest } from '../../src/dto/user
 import { LoginRequest } from '../../src/dto/login.dto';
 import { ChangePasswordRequest, PasswordRequest, ResetPasswordRequest } from '../../src/dto/password.dto';
 import { AppContext } from './app';
+import { SocialAuthCode, SocialAuthType } from '../../src/dto/social.dto';
 
 export class UserClient {
   private context: AppContext;
@@ -108,12 +109,28 @@ export class UserClient {
     return this.delete('auth/logout');
   }
 
-  profile() {
-    return this.get('user/profile');
+  profile(token?: string) {
+    return this.get('user/profile', {}, token);
   }
 
   updateProfile(body: UpdateUserRequest) {
     return this.patch('user/profile', {}, body);
+  }
+
+  async changeRecipient(recipient: string, token?: string): Promise<void> {
+    if (recipient[0] === '+') {
+      const resp = await this.post('user/profile/sms/change/send', {}, { phoneNumber: recipient }, token).expect(201);
+      const bindToken = resp.body.token;
+      const code = this.context.getVerifyCode();
+      await this.post('user/profile/sms/change', {}, { token: bindToken, code }, token).expect(204);
+    } else if (recipient.indexOf('@') >= 0) {
+      const resp = await this.post('user/profile/email/change/send', {}, { email: recipient }, token).expect(201);
+      const bindToken = resp.body.token;
+      const code = this.context.getVerifyCode();
+      await this.post('user/profile/email/change', {}, { token: bindToken, code }, token).expect(204);
+    } else {
+      expect(false).toBe(true);
+    }
   }
 
   changePassword(body: ChangePasswordRequest) {
@@ -130,6 +147,26 @@ export class UserClient {
 
   resetPswdComplete(body: ResetPasswordRequest) {
     return this.post('auth/password/reset/complete', {}, body);
+  }
+
+  socialAuthURL(provider: string, type: SocialAuthType) {
+    return this.get(`auth/social/${provider}/url`, { type });
+  }
+
+  socialAuth(provider: string, body: SocialAuthCode) {
+    return this.post(`auth/social/${provider}/auth`, {}, body);
+  }
+
+  socialConnections(token?: string) {
+    return this.get('auth/social/connections', {}, token);
+  }
+
+  socialConnect(provider: string, body: SocialAuthCode, token?: string) {
+    return this.post(`auth/social/${provider}/connect`, {}, body, token);
+  }
+
+  socialDisconnect(provider: string, token?: string) {
+    return this.delete(`auth/social/${provider}/disconnect`, {}, token);
   }
 
   async register(
@@ -167,6 +204,7 @@ export class UserClient {
     } else if (resp1.body.phoneNumber) {
       resp = await client.signoutSmsSend({ password }).expect(201);
     } else {
+      console.error(resp1.body);
       expect(false).toBe(true);
       return;
     }

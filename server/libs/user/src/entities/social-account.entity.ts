@@ -1,4 +1,12 @@
-import { Entity, Column, ManyToOne, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  JoinColumn,
+} from 'typeorm';
 import { User } from './user.entity';
 
 @Entity()
@@ -7,22 +15,28 @@ export class SocialAccount {
   id: number;
 
   @Column()
-  uid: string;
+  provider: string;
 
   @Column()
-  token: string;
+  identifier: string;
+
+  @Column()
+  nickname: string;
+
+  @Column()
+  avatar: string;
 
   @Column('simple-json')
   extraData: { [key: string]: any };
 
-  @Column({ default: true })
-  isActive: boolean;
-
   @ManyToOne(() => User, (user) => user.socialAccounts, {
-    cascade: true,
-    nullable: false,
+    onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'userId' })
   user: User;
+
+  @Column()
+  userId: number;
 
   @CreateDateColumn()
   createTime: Date;

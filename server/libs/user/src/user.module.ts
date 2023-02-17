@@ -1,3 +1,4 @@
+import { HttpModule } from '@nestjs/axios';
 import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -12,6 +13,7 @@ import { AuthService } from './services/auth.service';
 import { MultiFactorVerifyService } from './services/mfa.service';
 import { SecurityService } from './services/security.service';
 import { SignupService } from './services/signup.service';
+import { SocialService } from './services/social.service';
 import { UsersService } from './services/users.service';
 import { BearerStrategy } from './strategies/bearer.strategy';
 import {
@@ -29,7 +31,7 @@ import {
 } from './user.module-definition';
 
 @Module({
-  imports: [ConfigModule, TypeOrmModule.forFeature([...userEntities])],
+  imports: [ConfigModule, HttpModule, TypeOrmModule.forFeature([...userEntities])],
   controllers: [
     AuthController,
     SignupController,
@@ -42,6 +44,7 @@ import {
     AuthService,
     SignupService,
     UsersService,
+    SocialService,
     SecurityService,
     MultiFactorVerifyService,
     BearerStrategy,
