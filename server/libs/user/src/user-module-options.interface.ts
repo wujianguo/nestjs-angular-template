@@ -1,3 +1,76 @@
+import { Request } from 'express';
+
+export interface SocialUser {
+  identifier: string;
+  name: string;
+  avatar?: string;
+  origin?: { [key: string]: any };
+}
+
+export interface ISocialAdapter {
+  provider: string;
+  name: { en: string; zh: string };
+  logo: { en: string; zh: string };
+  scope?: string;
+  authorizationURL(req: Request): string;
+  auth(code: string, state?: string): Promise<SocialUser>;
+}
+
+export interface SecurityOptions {
+  securityKey: string;
+}
+
+export interface EmailAuthOptions {
+  enable: boolean;
+  domain: string;
+}
+
+export interface SmsAuthOptions {
+  enable: boolean;
+}
+
+export interface GenericOAuth2App {
+  provider: 'github' | 'gitlab' | 'slack';
+  clientId: string;
+  clientSecret: string;
+  redirectURI?: string;
+  scope?: string;
+}
+
+export interface GitlabApp extends GenericOAuth2App {
+  /**
+   * default: 'https://gitlab.com'
+   */
+  gitlabURL?: string;
+}
+
+export interface FeishuApp {
+  provider: 'feishu';
+  appId: string;
+  appSecret: string;
+  redirectURI: string;
+  scope?: string;
+}
+
+export interface DingtalkApp {
+  provider: 'dingtalk';
+  appKey: string;
+  appSecret: string;
+  redirectURI: string;
+  scope?: string;
+}
+
+export interface WecomApp {
+  provider: 'wecom';
+  agentId: string;
+  corpId: string;
+  appSecret: string;
+  redirectURI: string;
+  scope?: string;
+}
+
+export type SocialOptions = GenericOAuth2App | GitlabApp | FeishuApp | DingtalkApp | WecomApp | ISocialAdapter;
+
 export interface UserModuleOptions {
   securityKey: string;
 
@@ -14,6 +87,8 @@ export interface UserModuleOptions {
   authLimitCount?: number;
 
   authLimitTime?: number;
+
+  socials?: SocialOptions[];
 }
 
 export interface UserModuleOptionsInternal {
@@ -25,6 +100,7 @@ export interface UserModuleOptionsInternal {
   securityKey: string;
   authLimitCount: number;
   authLimitTime: number;
+  socials: SocialOptions[];
 }
 
 export const defaultOptions: UserModuleOptionsInternal = {
@@ -36,6 +112,7 @@ export const defaultOptions: UserModuleOptionsInternal = {
   securityKey: '902hshqyjcoh5tyap2lx5uttt8m80tvg',
   authLimitCount: 3,
   authLimitTime: 5 * 60,
+  socials: [],
 };
 
 export const USER_OPTIONS = 'USER_OPTIONS';
@@ -50,5 +127,6 @@ export const generateOptions = (options: UserModuleOptions): UserModuleOptionsIn
     authLimitCount: options.authLimitCount || defaultOptions.authLimitCount,
     authLimitTime: options.authLimitTime || defaultOptions.authLimitTime,
     securityKey: options.securityKey,
+    socials: options.socials || defaultOptions.socials,
   };
 };

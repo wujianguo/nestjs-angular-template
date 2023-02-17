@@ -7,6 +7,9 @@ export class SocialAccount {
   id: number;
 
   @Column()
+  provider: string;
+
+  @Column()
   uid: string;
 
   @Column()

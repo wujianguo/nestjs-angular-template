@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { SocialAuthType } from './auth-config.dto';
 import { AuthenticatedUserResponse } from './user.dto';
 
 export class SocialAuthURL {
@@ -44,8 +43,8 @@ class SocialUser {
 }
 
 export class SocialConnectionResponse {
-  @ApiProperty({ enum: SocialAuthType })
-  type: SocialAuthType;
+  @ApiProperty()
+  type: string;
 
   @ApiProperty()
   name: string;

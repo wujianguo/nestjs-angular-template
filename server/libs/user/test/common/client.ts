@@ -167,6 +167,7 @@ export class UserClient {
     } else if (resp1.body.phoneNumber) {
       resp = await client.signoutSmsSend({ password }).expect(201);
     } else {
+      console.error(resp1.body);
       expect(false).toBe(true);
       return;
     }

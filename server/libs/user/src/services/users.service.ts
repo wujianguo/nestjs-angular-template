@@ -5,6 +5,7 @@ import { SignupProfileDto } from '../dto/signup.dto';
 import { UpdateUserRequest } from '../dto/user.dto';
 import { User } from '../entities/user.entity';
 import { SecurityService } from './security.service';
+import { SocialUser } from '../user-module-options.interface';
 
 @Injectable()
 export class UsersService {
@@ -95,7 +96,13 @@ export class UsersService {
     }
   }
 
-  async create(profile: SignupProfileDto, email?: string, phoneNumber?: string): Promise<User> {
+  async create(
+    profile: SignupProfileDto,
+    email?: string,
+    phoneNumber?: string,
+    socialProvider?: string,
+    socialUser?: SocialUser,
+  ): Promise<User> {
     const exist1 = await this.usersRepository.exist({ where: { username: profile.username } });
     if (exist1) {
       this.logger.error(`username(${profile.username}) exists`);
@@ -154,6 +161,18 @@ export class UsersService {
 
   async findOne(login: string): Promise<User | null> {
     return this.usersRepository.findOneBy(this.where(login));
+  }
+
+  async findBySocial(provider: string, identifier: string): Promise<User | null> {
+    return this.usersRepository.findOneBy(this.where('login'));
+  }
+
+  async connectSocial(user: User, socialUser: SocialUser) {
+    return;
+  }
+
+  async disconnectSocial(user: User, provider: string) {
+    return;
   }
 
   async update(user: User, dto: UpdateUserRequest): Promise<User> {

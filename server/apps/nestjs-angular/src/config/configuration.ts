@@ -18,6 +18,7 @@ export interface CommonConfig {
 export interface Configuration {
   common: CommonConfig;
   db: DatabaseConfig;
+  auth: any;
 }
 
 const YAML_CONFIG_FILENAME = process.env.CONFIG_FILE || 'config/config.yaml';
@@ -33,8 +34,10 @@ export const loadConfig = (): Configuration => {
       database: conf.db.sqlite.database,
     },
   };
+  const auth = conf.auth;
   return {
     common: common,
     db: database,
+    auth: auth,
   };
 };

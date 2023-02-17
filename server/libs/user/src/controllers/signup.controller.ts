@@ -60,7 +60,7 @@ export class SignupController {
   })
   async signupVerify(@Body() body: VerifyCodeRequest): Promise<SignupTokenResponse> {
     const info = await this.mfaService.verify(body.code, body.token, 'signup');
-    const token = await this.signupService.signupVerify(info.recipient);
+    const token = await this.signupService.createSignupToken(info.recipient);
     return new SignupTokenResponse(token);
   }
 
@@ -77,7 +77,7 @@ export class SignupController {
     @Ip() ip: string,
   ): Promise<AuthenticatedUserResponse> {
     const userAgent = req.headers['user-agent']?.substring(0, 256) || '';
-    const user = await this.signupService.signupComplete(body.token, body);
+    const user = await this.signupService.completeSignup(body.token, body);
     const record = await this.authService.createToken(user, userAgent, ip);
     return mapAuthUser(record.token, user);
   }
