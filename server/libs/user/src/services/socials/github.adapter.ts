@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { HttpException } from '@nestjs/common';
 import { AxiosError } from 'axios';
 import { firstValueFrom } from 'rxjs';
-import { ISocialAdapter, SocialUser } from '../../user-module-options.interface';
+import { ISocialAdapter, SocialAuthURLOptions, SocialUser } from '../../user-module-options.interface';
 
 type GithubToken = {
   access_token: string;
@@ -32,7 +32,7 @@ export class GithubAdapter implements ISocialAdapter {
     public readonly scope?: string,
   ) {}
 
-  authorizationURL(): string {
+  authorizationURL(options?: SocialAuthURLOptions): string {
     const url = new URL(this.authBaseURL);
     url.searchParams.append('client_id', this.clientId);
     if (this.redirectURI) {
@@ -40,6 +40,9 @@ export class GithubAdapter implements ISocialAdapter {
     }
     if (this.scope) {
       url.searchParams.append('scope', this.scope);
+    }
+    if (options?.state) {
+      url.searchParams.append('state', options.state);
     }
     return url.href;
   }
@@ -73,6 +76,12 @@ export class GithubAdapter implements ISocialAdapter {
       const err = error as AxiosError;
       throw new HttpException(err.response?.data || 'Internal server error', err.response?.status || 500);
     }
-    return { name: res.data.name, identifier: res.data.login, avatar: res.data.avatar_url, origin: res.data };
+    return {
+      nickname: res.data.name,
+      username: res.data.name,
+      identifier: res.data.login,
+      avatar: res.data.avatar_url,
+      origin: res.data,
+    };
   }
 }

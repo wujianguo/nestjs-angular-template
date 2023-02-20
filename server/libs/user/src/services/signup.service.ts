@@ -20,10 +20,6 @@ export class SignupService {
     private securityService: SecurityService,
   ) {}
 
-  buildSocialRecipient(identifier: string): string {
-    return `#${identifier}`;
-  }
-
   isSocialRecipient(recipient: string): boolean {
     return recipient.startsWith('#');
   }

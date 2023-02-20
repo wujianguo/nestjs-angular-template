@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { BadRequestException, HttpException } from '@nestjs/common';
 import { AxiosError } from 'axios';
 import { firstValueFrom } from 'rxjs';
-import { ISocialAdapter, SocialUser } from '../../user-module-options.interface';
+import { ISocialAdapter, SocialAuthURLOptions, SocialUser } from '../../user-module-options.interface';
 
 type FeishuAppToken = {
   code: number;
@@ -38,10 +38,13 @@ export class FeishuAdapter implements ISocialAdapter {
     private readonly redirectURI: string,
   ) {}
 
-  authorizationURL(): string {
+  authorizationURL(options?: SocialAuthURLOptions): string {
     const url = new URL(this.authBaseURL);
     url.searchParams.append('app_id', this.appId);
     url.searchParams.append('redirect_uri', this.redirectURI);
+    if (options?.state) {
+      url.searchParams.append('state', options.state);
+    }
     return url.href;
   }
 
@@ -82,7 +85,8 @@ export class FeishuAdapter implements ISocialAdapter {
       throw new BadRequestException(tokenResp.data);
     }
     return {
-      name: res.data.data.name,
+      nickname: res.data.data.name,
+      username: res.data.data.name,
       identifier: res.data.data.union_id,
       avatar: res.data.data.avatar_big,
       origin: res.data,

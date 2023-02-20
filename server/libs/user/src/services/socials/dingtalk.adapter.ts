@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { HttpException } from '@nestjs/common';
 import { AxiosError } from 'axios';
 import { firstValueFrom } from 'rxjs';
-import { ISocialAdapter, SocialUser } from '../../user-module-options.interface';
+import { ISocialAdapter, SocialAuthURLOptions, SocialUser } from '../../user-module-options.interface';
 
 type DingtalkToken = {
   accessToken: string;
@@ -38,13 +38,17 @@ export class DingtalkAdapter implements ISocialAdapter {
       this.scope = scope;
     }
   }
-  authorizationURL(): string {
+
+  authorizationURL(options?: SocialAuthURLOptions): string {
     const url = new URL(this.authBaseURL);
     url.searchParams.append('client_id', this.appKey);
     url.searchParams.append('redirect_uri', this.redirectURI);
     url.searchParams.append('response_type', 'code');
     url.searchParams.append('scope', this.scope);
     url.searchParams.append('prompt', 'consent');
+    if (options?.state) {
+      url.searchParams.append('state', options.state);
+    }
     return url.href;
   }
 
@@ -73,6 +77,12 @@ export class DingtalkAdapter implements ISocialAdapter {
       const err = error as AxiosError;
       throw new HttpException(err.response?.data || 'Internal server error', err.response?.status || 500);
     }
-    return { name: res.data.nick, identifier: res.data.unionId, avatar: res.data.avatarUrl, origin: res.data };
+    return {
+      nickname: res.data.nick,
+      username: res.data.nick,
+      identifier: res.data.unionId,
+      avatar: res.data.avatarUrl,
+      origin: res.data,
+    };
   }
 }

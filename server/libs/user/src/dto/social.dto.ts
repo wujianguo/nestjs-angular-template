@@ -1,6 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { AuthenticatedUserResponse } from './user.dto';
 
+export enum SocialAuthType {
+  Signup = 'signup',
+  Connect = 'connect',
+}
+
 export class SocialAuthURL {
   @ApiProperty({ format: 'url' })
   url: string;
@@ -35,8 +40,8 @@ class SocialUser {
   @ApiProperty({ format: 'url' })
   avatar: string;
 
-  @ApiProperty()
-  data: { [key: string]: any };
+  // @ApiProperty()
+  // data: { [key: string]: any };
 
   @ApiProperty()
   createTime: Date;
@@ -44,7 +49,7 @@ class SocialUser {
 
 export class SocialConnectionResponse {
   @ApiProperty()
-  type: string;
+  provider: string;
 
   @ApiProperty()
   name: string;
@@ -52,12 +57,12 @@ export class SocialConnectionResponse {
   @ApiProperty({ format: 'url' })
   logo: string;
 
-  @ApiProperty({ format: 'url' })
-  authURL: string;
+  // @ApiProperty({ format: 'url' })
+  // authURL: string;
 
   @ApiProperty()
   connected: boolean;
 
   @ApiProperty({ required: false })
-  socialUser: SocialUser;
+  socialUser?: SocialUser;
 }

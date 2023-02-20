@@ -6,13 +6,13 @@ import {
   HttpCode,
   Param,
   UseGuards,
-  Res,
   Ip,
   Req,
   Delete,
-  BadRequestException,
+  Query,
+  ParseEnumPipe,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -20,11 +20,18 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { SocialAuthCode, SocialAuthResponse, SocialConnectionResponse } from '../dto/social.dto';
+import {
+  SocialAuthCode,
+  SocialAuthResponse,
+  SocialAuthType,
+  SocialAuthURL,
+  SocialConnectionResponse,
+} from '../dto/social.dto';
 import { mapAuthUser } from '../dto/user.dto';
 import { SocialService } from '../services/social.service';
 import { UsersService } from '../services/users.service';
@@ -43,23 +50,45 @@ export class SocialController {
     private readonly usersService: UsersService,
   ) {}
 
+  @UseGuards(BearerAuthGuard)
   @Get('connections')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get my social connections.' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiOkResponse({ description: 'Social connections', type: [SocialConnectionResponse] })
-  socialConnections(): SocialConnectionResponse[] {
-    return [];
+  async socialConnections(@GetAuthContext() context: AuthContext): Promise<SocialConnectionResponse[]> {
+    const socialAccounts = await this.usersService.findSocialConnections(context.user);
+    const socials = this.socialService.getPublicSocialAuthConfig();
+    return socials.map((data) => {
+      const accounts = socialAccounts.filter((item) => {
+        return item.provider === data.provider;
+      });
+      const account = accounts.length > 0 ? accounts[0] : null;
+      return {
+        provider: data.provider,
+        name: data.name,
+        logo: data.logo,
+        connected: account ? true : false,
+        socialUser: account
+          ? { nickname: account.nickname, avatar: account.avatar, createTime: account.createTime }
+          : undefined,
+      };
+    });
   }
 
   @Get(':provider/url')
-  @HttpCode(302)
   @ApiOperation({ summary: 'Get social auth URL.' })
   @ApiParam({ name: 'provider' })
+  @ApiQuery({ name: 'type', enum: SocialAuthType })
   @ApiResponse({ status: 302, description: 'Social auth URL' })
-  authURL(@Req() req: Request, @Param('provider') provider: string, @Res() res: Response) {
-    const url = this.socialService.authorizationURL(req, provider);
-    res.redirect(url);
+  authURL(
+    @Req() req: Request,
+    @Param('provider') provider: string,
+    @Query('type', new ParseEnumPipe(SocialAuthType)) type: SocialAuthType,
+  ): SocialAuthURL {
+    const userAgent = req.headers['user-agent']?.substring(0, 256) || '';
+    const url = this.socialService.authorizationURL(provider, userAgent, type);
+    return { url: url };
   }
 
   @Post(':provider/auth')
@@ -79,6 +108,7 @@ export class SocialController {
     @Body() body: SocialAuthCode,
     @Ip() ip: string,
   ): Promise<SocialAuthResponse> {
+    // todo: transaction
     const socialUser = await this.socialService.auth(provider, body.code, body.state);
     const user = await this.usersService.findBySocial(provider, socialUser.identifier);
     const ret = new SocialAuthResponse();
@@ -107,11 +137,7 @@ export class SocialController {
     @Body() body: SocialAuthCode,
   ) {
     const socialUser = await this.socialService.auth(provider, body.code, body.state);
-    const user = await this.usersService.findBySocial(provider, socialUser.identifier);
-    if (user && user.id !== context.user.id) {
-      throw new BadRequestException('This social user has already be connected to another account.');
-    }
-    await this.usersService.connectSocial(context.user, socialUser);
+    await this.usersService.connectSocial(context.user, provider, socialUser);
   }
 
   @UseGuards(BearerAuthGuard)

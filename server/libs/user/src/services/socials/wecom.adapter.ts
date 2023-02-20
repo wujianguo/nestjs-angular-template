@@ -2,8 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { BadRequestException, HttpException } from '@nestjs/common';
 import { AxiosError } from 'axios';
 import { firstValueFrom } from 'rxjs';
-import { Request } from 'express';
-import { ISocialAdapter, SocialUser } from '../../user-module-options.interface';
+import { ISocialAdapter, SocialAuthURLOptions, SocialUser } from '../../user-module-options.interface';
 
 type WecomAppToken = {
   errcode: number;
@@ -50,22 +49,23 @@ export class WecomAdapter implements ISocialAdapter {
       this.scope = scope;
     }
   }
-  authorizationURL(req: Request): string {
-    const userAgent = req.headers['user-agent']?.substring(0, 256) || '';
-    console.log(userAgent);
+
+  authorizationURL(options?: SocialAuthURLOptions): string {
+    const userAgent = options?.userAgent || '';
     let url: URL;
     if (userAgent.indexOf(' wxwork/') > 0) {
       url = new URL(this.authWebURL);
-      url.searchParams.append('state', 'wxwork');
     } else {
       url = new URL(this.authQrURL);
       url.searchParams.append('response_type', 'code');
       url.searchParams.append('scope', this.scope);
-      url.searchParams.append('state', 'qr');
     }
     url.searchParams.append('appid', this.corpId);
     url.searchParams.append('redirect_uri', this.redirectURI);
     url.searchParams.append('agentid', this.agentId);
+    if (options?.state) {
+      url.searchParams.append('state', options.state);
+    }
     return url.href;
   }
 
@@ -97,6 +97,6 @@ export class WecomAdapter implements ISocialAdapter {
       access_token: token.access_token,
       userid: userTicket.userid,
     });
-    return { name: user.name, identifier: user.userid, avatar: user.avatar, origin: user };
+    return { nickname: user.name, username: user.name, identifier: user.userid, avatar: user.avatar, origin: user };
   }
 }

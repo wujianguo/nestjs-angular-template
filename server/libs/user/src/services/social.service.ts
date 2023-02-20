@@ -1,6 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { Request } from 'express';
 import { SocialAuthConfig } from '../dto/auth-config.dto';
 import { UserModuleOptionsInternal, USER_OPTIONS } from '../user-module-options.interface';
 import { ISocialAdapter, SocialUser } from '../user-module-options.interface';
@@ -94,7 +93,7 @@ export class SocialService {
     }
   }
 
-  getPublicSocialAuthConfig(language: 'en' | 'zh'): SocialAuthConfig[] {
+  getPublicSocialAuthConfig(language: 'en' | 'zh' = 'en'): SocialAuthConfig[] {
     const ret = Object.keys(this.adapters).map((key) => {
       const conf = new SocialAuthConfig();
       conf.provider = this.adapters[key].provider;
@@ -111,8 +110,8 @@ export class SocialService {
     return ret;
   }
 
-  authorizationURL(req: Request, provider: string): string {
-    return this.adapters[provider].authorizationURL(req);
+  authorizationURL(provider: string, userAgent: string, state?: string): string {
+    return this.adapters[provider].authorizationURL({ userAgent, state });
   }
 
   async auth(provider: string, code: string, state?: string): Promise<SocialUser> {

@@ -1,18 +1,22 @@
-import { Request } from 'express';
-
 export interface SocialUser {
   identifier: string;
-  name: string;
+  username: string;
+  nickname: string;
   avatar?: string;
   origin?: { [key: string]: any };
 }
+
+export type SocialAuthURLOptions = {
+  userAgent: string;
+  state?: string;
+};
 
 export interface ISocialAdapter {
   provider: string;
   name: { en: string; zh: string };
   logo: { en: string; zh: string };
   scope?: string;
-  authorizationURL(req: Request): string;
+  authorizationURL(options?: SocialAuthURLOptions): string;
   auth(code: string, state?: string): Promise<SocialUser>;
 }
 

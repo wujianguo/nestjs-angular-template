@@ -22,6 +22,7 @@ describe('Password', () => {
     const recipient = `user1@example.com`;
     const password = `Password1`;
     const resp = await client.register(username, recipient, password);
+    expect(resp.email).toBe('u****@example.com');
 
     const resp2 = await client.login({ login: username, password });
     const client2 = new UserClient(context);
@@ -36,7 +37,8 @@ describe('Password', () => {
 
     await client2.profile().expect(401);
     await client.login({ login: username, password }).expect(400);
-    await client.login({ login: username, password: newPassword }).expect(200);
+    const resp3 = await client.login({ login: username, password: newPassword }).expect(200);
+    expect(resp3.body.email).toBe('u****@example.com');
   });
 
   it('reset', async () => {
@@ -60,7 +62,8 @@ describe('Password', () => {
     client2.setToken(resp.token);
     await client2.profile().expect(401);
     await client.login({ login: username, password }).expect(400);
-    await client.login({ login: username, password: newPassword }).expect(200);
+    const resp5 = await client.login({ login: username, password: newPassword }).expect(200);
+    expect(resp5.body.email).toBe('u****@example.com');
 
     const resp4 = await client.resetPswdSmsSend({ phoneNumber: '+8617200001234' }).expect(201);
     const token4 = resp4.body.token;

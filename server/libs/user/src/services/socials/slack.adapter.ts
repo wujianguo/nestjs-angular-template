@@ -1,8 +1,8 @@
 import { HttpService } from '@nestjs/axios';
 import { AxiosError } from 'axios';
-import { BadRequestException, HttpException } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
-import { ISocialAdapter, SocialUser } from '../../user-module-options.interface';
+import { BadRequestException, HttpException } from '@nestjs/common';
+import { ISocialAdapter, SocialAuthURLOptions, SocialUser } from '../../user-module-options.interface';
 
 type SlackUser = {
   ok: boolean;
@@ -43,13 +43,16 @@ export class SlackAdapter implements ISocialAdapter {
     }
   }
 
-  authorizationURL(): string {
+  authorizationURL(options?: SocialAuthURLOptions): string {
     const url = new URL(this.authBaseURL);
     url.searchParams.append('client_id', this.clientId);
     url.searchParams.append('response_type', 'code');
     url.searchParams.append('scope', this.scope);
     if (this.redirectURI) {
       url.searchParams.append('redirect_uri', this.redirectURI);
+    }
+    if (options?.state) {
+      url.searchParams.append('state', options.state);
     }
     return url.href;
   }
@@ -74,6 +77,12 @@ export class SlackAdapter implements ISocialAdapter {
       throw new BadRequestException(res.data);
     }
     const avatar = res.data.user.image_512 || res.data.user.image_192 || res.data.user.image_72;
-    return { name: res.data.user.name, identifier: res.data.user.id, avatar: avatar, origin: res.data };
+    return {
+      nickname: res.data.user.name,
+      username: res.data.user.name,
+      identifier: res.data.user.id,
+      avatar: avatar,
+      origin: res.data,
+    };
   }
 }
