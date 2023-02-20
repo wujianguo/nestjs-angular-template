@@ -34,8 +34,8 @@ import { CommonConfig, DatabaseConfig, loadConfig } from './config/configuration
       useFactory: (configService: ConfigService) => {
         const auth = configService.get('auth');
         return {
-          securityKey: auth.security,
-          socials: auth.socials,
+          securityKey: auth?.security || 'xyz',
+          socials: auth?.socials || [],
         };
       },
       inject: [ConfigService],
