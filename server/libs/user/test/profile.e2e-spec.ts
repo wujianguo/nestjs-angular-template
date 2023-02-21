@@ -63,7 +63,18 @@ describe('Profile', () => {
     const recipient2 = `userchange${index}@example.com`;
     await client2.changeRecipient(recipient2);
 
+    const username4 = `username4${index}`;
+    const recipient4 = `user4${index}@example.com`;
+    await client.register(username4, recipient4, password);
+
+    await client2.changeRecipient(recipient4, 400);
+
     const recipient3 = `+8617204001234`;
     await client2.changeRecipient(recipient3);
+
+    const username5 = `username5${index}`;
+    const recipient5 = `+8617104001234`;
+    await client.register(username5, recipient5, password);
+    await client2.changeRecipient(recipient5, 400);
   });
 });

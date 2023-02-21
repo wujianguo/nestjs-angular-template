@@ -219,11 +219,13 @@ export class UsersService {
 
   async connectSocial(user: User, provider: string, socialUser: SocialUser): Promise<SocialAccount> {
     return await this.dataSource.transaction(async (transactionalEntityManager) => {
-      const socialAccount = await transactionalEntityManager.findOneBy(SocialAccount, {
-        provider: provider,
-        identifier: socialUser.identifier,
+      const exists = await transactionalEntityManager.exists(SocialAccount, {
+        where: {
+          provider: provider,
+          identifier: socialUser.identifier,
+        },
       });
-      if (socialAccount) {
+      if (exists) {
         throw new BadRequestException('This social user has already be connected.');
       }
       const social = this.createSocialAccount(user, provider, socialUser);

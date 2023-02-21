@@ -73,6 +73,10 @@ export class UserClient {
     return req;
   }
 
+  authConfig() {
+    return this.get('auth/config');
+  }
+
   signupEmailSend(body: SendEmailCodeRequest) {
     return this.post('auth/signup/email/send', {}, body);
   }
@@ -117,17 +121,17 @@ export class UserClient {
     return this.patch('user/profile', {}, body);
   }
 
-  async changeRecipient(recipient: string, token?: string): Promise<void> {
+  async changeRecipient(recipient: string, statusCode = 204): Promise<void> {
     if (recipient[0] === '+') {
-      const resp = await this.post('user/profile/sms/change/send', {}, { phoneNumber: recipient }, token).expect(201);
+      const resp = await this.post('user/profile/sms/change/send', {}, { phoneNumber: recipient }).expect(201);
       const bindToken = resp.body.token;
       const code = this.context.getVerifyCode();
-      await this.post('user/profile/sms/change', {}, { token: bindToken, code }, token).expect(204);
+      await this.post('user/profile/sms/change', {}, { token: bindToken, code }).expect(statusCode);
     } else if (recipient.indexOf('@') >= 0) {
-      const resp = await this.post('user/profile/email/change/send', {}, { email: recipient }, token).expect(201);
+      const resp = await this.post('user/profile/email/change/send', {}, { email: recipient }).expect(201);
       const bindToken = resp.body.token;
       const code = this.context.getVerifyCode();
-      await this.post('user/profile/email/change', {}, { token: bindToken, code }, token).expect(204);
+      await this.post('user/profile/email/change', {}, { token: bindToken, code }).expect(statusCode);
     } else {
       expect(false).toBe(true);
     }

@@ -35,6 +35,8 @@ import { CommonConfig, DatabaseConfig, loadConfig } from './config/configuration
         const auth = configService.get('auth');
         return {
           securityKey: auth?.security || 'xyz',
+          email: auth?.email,
+          sms: auth?.sms,
           socials: auth?.socials || [],
         };
       },

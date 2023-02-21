@@ -93,6 +93,10 @@ export interface UserModuleOptions {
   authLimitTime?: number;
 
   socials?: SocialOptions[];
+
+  email?: EmailAuthOptions;
+
+  sms?: SmsAuthOptions;
 }
 
 export interface UserModuleOptionsInternal {
@@ -105,6 +109,8 @@ export interface UserModuleOptionsInternal {
   authLimitCount: number;
   authLimitTime: number;
   socials: SocialOptions[];
+  email: EmailAuthOptions;
+  sms: SmsAuthOptions;
 }
 
 export const defaultOptions: UserModuleOptionsInternal = {
@@ -117,6 +123,8 @@ export const defaultOptions: UserModuleOptionsInternal = {
   authLimitCount: 3,
   authLimitTime: 5 * 60,
   socials: [],
+  email: { enable: false, domain: '' },
+  sms: { enable: false },
 };
 
 export const USER_OPTIONS = 'USER_OPTIONS';
@@ -132,5 +140,7 @@ export const generateOptions = (options: UserModuleOptions): UserModuleOptionsIn
     authLimitTime: options.authLimitTime || defaultOptions.authLimitTime,
     securityKey: options.securityKey,
     socials: options.socials || defaultOptions.socials,
+    email: options.email || defaultOptions.email,
+    sms: options.sms || defaultOptions.sms,
   };
 };

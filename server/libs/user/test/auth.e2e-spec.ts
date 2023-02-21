@@ -20,6 +20,10 @@ describe('Auth', () => {
       client = new UserClient(context);
     });
 
+    it('config', async () => {
+      await client.authConfig().expect(200);
+    });
+
     it('username', async () => {
       const username = `username${index}`;
       const recipient = `user${index}@example.com`;

@@ -59,7 +59,7 @@ describe('Social', () => {
       expect(resp.body.username).toBe(username);
       const token = resp.body.token;
 
-      await client.socialAuthURL(provider, SocialAuthType.Signup).expect(200);
+      await client.socialAuthURL(provider, SocialAuthType.Connect).expect(200);
       await client.socialConnect(provider, { code: `s-${identifier}`, state: 'connect' }, token).expect(204);
       const connections = await client.socialConnections(token).expect(200);
       expect(connections.body.length).toBe(1);
@@ -71,11 +71,23 @@ describe('Social', () => {
       expect(resp2.body.user).toBeDefined();
       expect(resp2.body.user.username).toBe(username);
 
+      const username2 = `username2${index}`;
+      const recipient2 = `user2${index}@example.com`;
+      await client.register(username2, recipient2, password);
+      const resp22 = await client.login({ login: username2, password }).expect(200);
+      expect(resp22.body.username).toBe(username2);
+      const token2 = resp22.body.token;
+
+      await client.socialAuthURL(provider, SocialAuthType.Connect).expect(200);
+      await client.socialConnect(provider, { code: `s-${identifier}`, state: 'connect' }, token2).expect(400);
+
       await client.socialDisconnect(provider, token).expect(204);
       const connections2 = await client.socialConnections(token).expect(200);
       expect(connections2.body.length).toBe(1);
       expect(connections2.body[0].provider).toBe(provider);
       expect(connections2.body[0].connected).toBe(false);
+
+      await client.socialConnect(provider, { code: `s-${identifier}`, state: 'connect' }, token2).expect(204);
 
       // todo: signout
       // await client.signout(username, password);

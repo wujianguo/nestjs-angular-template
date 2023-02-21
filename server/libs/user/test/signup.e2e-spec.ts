@@ -53,6 +53,8 @@ describe('Signup', () => {
         token: token,
         username: 'myname' + token.substring(token.length - 4),
         password: 'passworD123*x',
+        firstName: 'First',
+        lastName: 'Last',
       };
       await client.signupComplete(body).expect(statusCode);
     }
