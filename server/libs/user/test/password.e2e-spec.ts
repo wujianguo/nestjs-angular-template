@@ -28,6 +28,7 @@ describe('Password', () => {
     const client2 = new UserClient(context);
     client2.setToken(resp2.body.token);
     await client2.profile().expect(200);
+    await client2.changeRecipient('+8617200002234');
 
     const client3 = new UserClient(context);
     client3.setToken(resp.token);
