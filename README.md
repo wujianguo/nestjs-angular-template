@@ -11,8 +11,7 @@ Nestjs + Angular template.
 
 | Branch              | Feature                            |
 | ------------------- | ---------------------------------- |
-| main                | Basic server and web client app.   |
-| feature/user        | User manager and Authentication.   |
+| main                | User manager and Authentication.   |
 | feature/permission  | Permissions.                       |
 
 ## Development

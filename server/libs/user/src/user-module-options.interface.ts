@@ -24,13 +24,17 @@ export interface SecurityOptions {
   securityKey: string;
 }
 
+export type TemplateKeys = 'signup' | 'signout' | 'resetpswd' | 'bind';
+
 export interface EmailAuthOptions {
   enable: boolean;
-  domain: string;
+  domain?: string;
+  template?: { [key in TemplateKeys]: { subject: string; template?: string; text?: string; html?: string } };
 }
 
 export interface SmsAuthOptions {
   enable: boolean;
+  template?: { [key in TemplateKeys]: string };
 }
 
 export interface GenericOAuth2App {

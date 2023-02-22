@@ -12,7 +12,14 @@ export class EmailService {
     this.adapter = this.options.adapter || new ConsoleEmailAdapter();
   }
 
-  async send(subject: string, message: string, recipientList: string[]): Promise<void> {
-    return this.adapter.send(subject, message, recipientList);
+  async send(
+    subject: string,
+    recipientList: string[],
+    context: { [key: string]: any },
+    template?: string,
+    text?: string,
+    html?: string,
+  ): Promise<void> {
+    return this.adapter.send(subject, recipientList, context, template, text, html);
   }
 }

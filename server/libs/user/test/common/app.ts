@@ -51,7 +51,6 @@ export class AppContext {
   }
 
   getVerifyCode(): string {
-    const rexp = new RegExp('\\d{6}', 'g');
     let lastEmailMessage: EmailMessage | null = null;
     if (this.emailAdapter.messages.length > 0) {
       lastEmailMessage = this.emailAdapter.messages[0];
@@ -60,21 +59,16 @@ export class AppContext {
     if (this.smsAdapter.messages.length > 0) {
       lastSmsMessage = this.smsAdapter.messages[0];
     }
-    let msg = '';
     if (lastEmailMessage && lastSmsMessage) {
       if (lastEmailMessage.time > lastSmsMessage.time) {
-        msg = lastEmailMessage.message;
+        return lastEmailMessage.context.code;
       } else {
-        msg = lastSmsMessage.message;
+        return lastSmsMessage.context.code;
       }
     } else if (lastEmailMessage) {
-      msg = lastEmailMessage.message;
+      return lastEmailMessage.context.code;
     } else if (lastSmsMessage) {
-      msg = lastSmsMessage.message;
-    }
-    const codes = rexp.exec(msg);
-    if (codes && codes.length > 0) {
-      return codes[0];
+      return lastSmsMessage.context.code;
     }
     return '';
   }

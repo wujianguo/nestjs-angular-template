@@ -33,7 +33,7 @@ export class AuthController {
   @ApiOkResponse({ description: 'User auth config', type: AuthConfig })
   getConfig(): AuthConfig {
     const conf = new AuthConfig();
-    conf.email = { enable: this.config.email.enable, domain: this.config.email.domain };
+    conf.email = { enable: this.config.email.enable, domain: this.config.email.domain || '' };
     conf.sms = { enable: this.config.sms.enable };
     conf.socials = this.socialService.getPublicSocialAuthConfig();
     return conf;

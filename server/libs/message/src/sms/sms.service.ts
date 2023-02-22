@@ -12,7 +12,7 @@ export class SmsService {
     this.adapter = this.options.adapter || new ConsoleSmsAdapter();
   }
 
-  async send(message: string, recipientList: string[]): Promise<void> {
-    return this.adapter.send(message, recipientList);
+  async send(template: string, context: { [key: string]: any }, recipientList: string[]): Promise<void> {
+    return this.adapter.send(template, context, recipientList);
   }
 }

@@ -5,6 +5,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
 import { userEntities, UserModule } from '@app/user';
 import { EmailModule, SmsModule } from '@app/message';
+import { MailerModule, MailerService } from '@nestjs-modules/mailer';
+import { NodeMailerEmailAdapter } from './common/nodemailer-email.adapter';
 import { AppController } from './app.controller';
 import { CommonConfig, DatabaseConfig, loadConfig } from './config/configuration';
 
@@ -42,7 +44,32 @@ import { CommonConfig, DatabaseConfig, loadConfig } from './config/configuration
       },
       inject: [ConfigService],
     }),
-    EmailModule.forRoot(),
+    MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => {
+        const email = configService.get('auth.email');
+        return {
+          transport: {
+            host: email?.host,
+            port: email?.port,
+            secure: email?.secure,
+            auth: { user: email?.user, pass: email?.password },
+          },
+        };
+      },
+      inject: [ConfigService],
+    }),
+    EmailModule.forRootAsync({
+      imports: [ConfigModule, MailerModule],
+      useFactory: (configService: ConfigService, mailserService: MailerService) => {
+        if (configService.get('auth.email.user') && configService.get('auth.email.password')) {
+          return { adapter: new NodeMailerEmailAdapter(mailserService, configService.get('auth.email.from') || '') };
+        } else {
+          return {};
+        }
+      },
+      inject: [ConfigService, MailerService],
+    }),
     SmsModule.forRoot(),
   ],
   controllers: [AppController],

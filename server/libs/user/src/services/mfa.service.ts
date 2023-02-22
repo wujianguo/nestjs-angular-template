@@ -4,7 +4,7 @@ import { MoreThan, Repository } from 'typeorm';
 import { EmailService, SmsService } from '@app/message';
 import { MultiFactorVerifyCode } from '../entities/mfa.entity';
 import { SecurityService } from './security.service';
-import { UserModuleOptionsInternal, USER_OPTIONS } from '../user-module-options.interface';
+import { TemplateKeys, UserModuleOptionsInternal, USER_OPTIONS } from '../user-module-options.interface';
 
 @Injectable()
 export class MultiFactorVerifyService {
@@ -18,7 +18,7 @@ export class MultiFactorVerifyService {
     private securityService: SecurityService,
   ) {}
 
-  private async saveCode(code: string, recipient: string, usage: string, associatedId = 0): Promise<string> {
+  private async saveCode(code: string, recipient: string, usage: TemplateKeys, associatedId = 0): Promise<string> {
     const entity = new MultiFactorVerifyCode();
     entity.token = this.securityService.randomToken(this.securityService.tokenSize);
     entity.code = await this.securityService.bcryptHash(code);
@@ -49,24 +49,32 @@ export class MultiFactorVerifyService {
     }
   }
 
-  async sendEmailCode(email: string, usage: string, associatedId = 0): Promise<string> {
+  async sendEmailCode(email: string, usage: TemplateKeys, associatedId = 0): Promise<string> {
     await this.checkRecipientExists(email);
     const code = this.securityService.randomCode(this.securityService.codeSize);
-    await this.emailService.send('Hello', `Hello: your code: [${code}]`, [email]);
+    const template = this.config.email.template ? this.config.email.template[usage] : { subject: usage, text: '' };
+    await this.emailService.send(
+      template.subject,
+      [email],
+      { code: code },
+      template.template,
+      template.text,
+      template.html,
+    );
     return this.saveCode(code, email, usage, associatedId);
   }
 
-  async sendSmsCode(phoneNumber: string, usage: string, associatedId = 0): Promise<string> {
+  async sendSmsCode(phoneNumber: string, usage: TemplateKeys, associatedId = 0): Promise<string> {
     await this.checkRecipientExists(phoneNumber);
     const code = this.securityService.randomCode(this.securityService.codeSize);
-    await this.smsService.send(`Hello: your code: [${code}]`, [phoneNumber]);
+    await this.smsService.send(usage, { code: code }, [phoneNumber]);
     return this.saveCode(code, phoneNumber, usage, associatedId);
   }
 
   async verify(
     code: string,
     token: string,
-    usage: string,
+    usage: TemplateKeys,
   ): Promise<{ recipient: string; code: MultiFactorVerifyCode }> {
     const expire = new Date(new Date().getTime() - this.config.codeExpireTime * 1000);
     const codeObject = await this.codeRepository.findOneBy({ token, usage, createTime: MoreThan(expire) });
