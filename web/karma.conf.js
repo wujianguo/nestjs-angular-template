@@ -1,3 +1,6 @@
+// Karma configuration file, see link for more information
+// https://karma-runner.github.io/1.0/config/configuration-file.html
+
 module.exports = function (config) {
   config.set({
     basePath: '',
@@ -25,8 +28,9 @@ module.exports = function (config) {
       dir: require('path').join(__dirname, './coverage/'),
       subdir: '.',
       reporters: [
-        { type: 'lcov' },
+        { type: 'html' },
         { type: 'text-summary' },
+        { type: 'lcov' },
         { type: 'cobertura' }
       ]
     },
@@ -40,4 +44,3 @@ module.exports = function (config) {
     restartOnFileChange: true
   });
 };
-

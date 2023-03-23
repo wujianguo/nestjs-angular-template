@@ -67,7 +67,8 @@ export class SocialController {
       return {
         provider: data.provider,
         name: data.name,
-        logo: data.logo,
+        iconSVG: data.iconSVG,
+        iconURL: data.iconURL,
         connected: account ? true : false,
         socialUser: account
           ? { nickname: account.nickname, avatar: account.avatar, createTime: account.createTime }

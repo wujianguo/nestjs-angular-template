@@ -99,10 +99,12 @@ export class SocialService {
       conf.provider = this.adapters[key].provider;
       if (language === 'en') {
         conf.name = this.adapters[key].name.en;
-        conf.logo = this.adapters[key].logo.en;
+        conf.iconURL = this.adapters[key].iconURL.en;
+        conf.iconSVG = this.adapters[key].iconSVG.en;
       } else if (language === 'zh') {
         conf.name = this.adapters[key].name.zh;
-        conf.logo = this.adapters[key].logo.zh;
+        conf.iconURL = this.adapters[key].iconURL.zh;
+        conf.iconSVG = this.adapters[key].iconSVG.zh;
       }
       // conf.authURL = this.adapters[key].authorizationURL();
       return conf;

@@ -1,21 +1,18 @@
-import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Injectable } from '@angular/core';
+import { map, Observable } from 'rxjs';
+import { buildAPI } from '../../core/utils/api';
+import { UserResponseDto } from '../dto/user.dto';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
+  constructor(private http: HttpClient) {}
 
-  constructor(private http: HttpClient) { }
-
-  getHello(): Observable<string> {
-    const url = '/api';
-    return this.http.get(url)
-      .pipe(map(res => {
-        return (res as {[key: string]: any })['data'].toString();
-      }),
-    );
+  profile(): Observable<UserResponseDto> {
+    return this.http.get(buildAPI('/user/profile')).pipe(map(res => {
+      return res as UserResponseDto;
+    }));
   }
 }

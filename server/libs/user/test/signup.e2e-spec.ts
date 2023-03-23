@@ -170,12 +170,13 @@ describe('Signup', () => {
   });
 
   describe('user', () => {
-    it('username contains only letters and numbers', async () => {
+    it('username contains only and both letters and numbers', async () => {
       const email = 'aA1234ytest0@example.com';
       await client.register('aA1234y', email, password, 201);
       await client.register('_aA1234', '1' + email, password, 400);
       await client.register('aA1*234', '2' + email, password, 400);
       await client.register('aA1-234', '3' + email, password, 400);
+      await client.register('1234', '4' + email, password, 400);
     });
 
     it('username should be unique', async () => {

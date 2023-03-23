@@ -5,7 +5,7 @@
 ###################
 FROM node:18-alpine As development
 WORKDIR /usr/src/app
-RUN npm install -g @nestjs/cli @angular/cli
+RUN npm install -g @nestjs/cli @angular/cli@14.2.10
 # Use the node user from the image (instead of the root user)
 USER node
 

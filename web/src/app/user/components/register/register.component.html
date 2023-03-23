@@ -1,0 +1,146 @@
+<h1 id="title" class="title">Register</h1>
+
+<ng-container *ngIf="config">
+  <ng-container *ngIf="config.email.enable || config.sms.enable">
+    <nb-stepper #stepper disableStepNavigation>
+      <nb-step>
+        <form *ngIf="config.email.enable && config.sms.enable" [formGroup]="recipientForm" (ngSubmit)="send()">
+          <div class="form-control-group">
+            <label class="label" for="input-recipient">Email address / Phone number</label>
+            <nb-form-field>
+              <input type="text" class="form-control" formControlName="recipient" autofocus fullWidth
+                fieldSize="large" nbInput
+                [ngClass]="{'form-control-danger': recipientForm.invalid && (recipientForm.dirty || recipientForm.touched)}">
+            </nb-form-field>
+          </div>    
+          <button nbButton fullWidth [disabled]="sendProcessing || !recipientForm.valid" [class.btn-pulse]="sendProcessing" status="primary" type="submit">Send</button>
+        </form>
+
+        <form *ngIf="config.email.enable && !config.sms.enable" [formGroup]="emailForm" (ngSubmit)="send()">
+          <div class="form-control-group">
+            <label class="label" for="input-recipient">Email address</label>
+            <nb-form-field>
+              <nb-icon nbPrefix icon="email-outline" pack="eva"></nb-icon>
+              <input type="text" class="form-control" formControlName="email" autofocus fullWidth
+                fieldSize="large" nbInput
+                [ngClass]="{'form-control-danger': emailForm.invalid && (emailForm.dirty || emailForm.touched)}">
+            </nb-form-field>
+          </div>    
+          <button nbButton fullWidth [disabled]="sendProcessing || !emailForm.valid" [class.btn-pulse]="sendProcessing" status="primary" type="submit">Send</button>
+        </form>
+
+        <form *ngIf="!config.email.enable && config.sms.enable" [formGroup]="phoneNumberForm" (ngSubmit)="send()">
+          <div class="form-control-group">
+            <label class="label" for="input-recipient">Phone number</label>
+            <nb-form-field>
+              <nb-icon nbPrefix icon="smartphone-outline" pack="eva"></nb-icon>
+              <input type="text" class="form-control" formControlName="phoneNumber" autofocus fullWidth
+                fieldSize="large" nbInput
+                [ngClass]="{'form-control-danger': phoneNumberForm.invalid && (phoneNumberForm.dirty || phoneNumberForm.touched)}">
+            </nb-form-field>
+          </div>    
+          <button nbButton fullWidth [disabled]="sendProcessing || !phoneNumberForm.valid" [class.btn-pulse]="sendProcessing" status="primary" type="submit">Send</button>
+        </form>     
+
+      </nb-step>
+    
+      <nb-step [stepControl]="codeForm">
+        <form [formGroup]="codeForm" (ngSubmit)="verify()">
+    
+          <div class="form-control-group">
+            <label class="label" for="input-code">Code for {{recipient}}</label>
+            <nb-form-field>
+              <nb-icon nbPrefix icon="lock-outline" pack="eva"></nb-icon>
+              <input type="text" placeholder="Code" class="form-control" formControlName="code" fullWidth fieldSize="large"
+                nbInput
+                [ngClass]="{'form-control-danger': codeForm.invalid && (codeForm.dirty || codeForm.touched)}">
+            </nb-form-field>
+          </div>
+          <button nbButton fullWidth [disabled]="verifyProcessing || !codeForm.valid" [class.btn-pulse]="verifyProcessing" status="primary" type="submit">Submit</button>
+        </form>
+      </nb-step>
+    
+      <nb-step [stepControl]="completeForm">
+        <form [formGroup]="completeForm" (ngSubmit)="completeRegister()" class="step-container">
+          <div class="form-control-group">
+            <label class="label" for="input-username">Username for {{recipient}}</label>
+            <input 
+              type="text" 
+              placeholder="Username" 
+              class="form-control" 
+              formControlName="username"
+              required
+              autofocus 
+              fullWidth
+              fieldSize="large" 
+              nbInput 
+              [ngClass]="{'form-control-danger': completeForm.invalid && (completeForm.dirty || completeForm.touched)}"
+            >
+          </div>
+
+          <div class="fullname">
+            <div class="form-control-group firstname">
+              <label class="label" for="input-username">First name</label>
+              <input 
+                type="text" 
+                placeholder="First name" 
+                class="form-control" 
+                formControlName="firstname"
+                fieldSize="large" 
+                fullWidth
+                nbInput 
+                [ngClass]="{'form-control-danger': completeForm.invalid && (completeForm.dirty || completeForm.touched)}"
+              >
+            </div>
+  
+            <div class="form-control-group lastname">
+              <label class="label" for="input-username">Last name</label>
+              <input 
+                type="text" 
+                placeholder="Last name" 
+                class="form-control" 
+                formControlName="lastname"
+                fieldSize="large"
+                fullWidth
+                nbInput 
+                [ngClass]="{'form-control-danger': completeForm.invalid && (completeForm.dirty || completeForm.touched)}"
+              >
+            </div>
+  
+          </div>
+
+          <div class="form-control-group">
+            <label class="label" for="input-password">Password</label>
+            <input 
+              type="password" 
+              placeholder="Password" 
+              class="form-control" 
+              formControlName="password"
+              required
+              fullWidth
+              fieldSize="large" 
+              nbInput 
+              [ngClass]="{'form-control-danger': completeForm.invalid && (completeForm.dirty || completeForm.touched)}"
+            >
+          </div>
+        
+          <button nbButton fullWidth [disabled]="registerProcessing || !completeForm.valid" [class.btn-pulse]="registerProcessing" status="primary" type="submit">Register</button>
+        </form>
+        
+      </nb-step>
+    
+    </nb-stepper>
+    
+  </ng-container>
+
+  <section *ngIf="config.socials && config.socials.length > 0" class="links" aria-label="Social sign in">
+    or enter with:
+    <app-socials [socials]="config.socials"></app-socials>
+  </section>
+
+<section class="another-action" aria-label="Sign in">
+  Already have an account? <a class="text-link" routerLink="../login">Log in</a>
+</section>
+
+
+</ng-container>

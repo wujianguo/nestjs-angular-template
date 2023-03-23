@@ -14,7 +14,8 @@ export type SocialAuthURLOptions = {
 export interface ISocialAdapter {
   provider: string;
   name: { en: string; zh: string };
-  logo: { en: string; zh: string };
+  iconURL: { en: string; zh: string };
+  iconSVG: { en: string; zh: string };
   scope?: string;
   authorizationURL(options?: SocialAuthURLOptions): string;
   auth(code: string, state?: string): Promise<SocialUser>;
@@ -34,6 +35,7 @@ export interface EmailAuthOptions {
 
 export interface SmsAuthOptions {
   enable: boolean;
+  prefix: string;
   template?: { [key in TemplateKeys]: string };
 }
 
@@ -43,6 +45,7 @@ export interface GenericOAuth2App {
   clientSecret: string;
   redirectURI?: string;
   scope?: string;
+  logo?: string;
 }
 
 export interface GitlabApp extends GenericOAuth2App {
@@ -58,6 +61,7 @@ export interface FeishuApp {
   appSecret: string;
   redirectURI: string;
   scope?: string;
+  logo?: string;
 }
 
 export interface DingtalkApp {
@@ -66,6 +70,7 @@ export interface DingtalkApp {
   appSecret: string;
   redirectURI: string;
   scope?: string;
+  logo?: string;
 }
 
 export interface WecomApp {
@@ -75,6 +80,7 @@ export interface WecomApp {
   appSecret: string;
   redirectURI: string;
   scope?: string;
+  logo?: string;
 }
 
 export type SocialOptions = GenericOAuth2App | GitlabApp | FeishuApp | DingtalkApp | WecomApp | ISocialAdapter;
@@ -128,7 +134,7 @@ export const defaultOptions: UserModuleOptionsInternal = {
   authLimitTime: 5 * 60,
   socials: [],
   email: { enable: false, domain: '' },
-  sms: { enable: false },
+  sms: { enable: false, prefix: '+86' },
 };
 
 export const USER_OPTIONS = 'USER_OPTIONS';

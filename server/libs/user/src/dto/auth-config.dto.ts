@@ -11,6 +11,9 @@ class EmailAuthConfig {
 class SmsAuthConfig {
   @ApiProperty()
   enable: boolean;
+
+  @ApiProperty({ default: '+86' })
+  prefix: string;
 }
 
 // export enum SocialAuthType {
@@ -30,10 +33,10 @@ export class SocialAuthConfig {
   name: string;
 
   @ApiProperty({ format: 'url' })
-  logo: string;
+  iconURL: string;
 
-  // @ApiProperty({ format: 'url' })
-  // authURL: string;
+  @ApiProperty()
+  iconSVG: string;
 }
 
 export class AuthConfig {

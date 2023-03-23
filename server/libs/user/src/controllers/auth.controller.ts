@@ -34,7 +34,9 @@ export class AuthController {
   getConfig(): AuthConfig {
     const conf = new AuthConfig();
     conf.email = { enable: this.config.email.enable, domain: this.config.email.domain || '' };
-    conf.sms = { enable: this.config.sms.enable };
+    // conf.email.enable = false;
+    conf.sms = { enable: this.config.sms.enable, prefix: this.config.sms.prefix || '+86' };
+    // conf.sms = { enable: false, prefix: '+86' };
     conf.socials = this.socialService.getPublicSocialAuthConfig();
     return conf;
   }
@@ -50,6 +52,7 @@ export class AuthController {
     type: AuthenticatedUserResponse,
   })
   async login(@Req() req: Request, @Body() body: LoginRequest, @Ip() ip: string): Promise<AuthenticatedUserResponse> {
+    // await new Promise((r) => setTimeout(r, 6000));
     const userAgent = req.headers['user-agent']?.substring(0, 256) || '';
     const user = await this.authService.validateLogin(body.login, body.password, userAgent, ip);
     const record = await this.authService.createToken(user, userAgent, ip);

@@ -1,2 +1,53 @@
-<p>login works!</p>
-<p *ngIf="data$ | async as data">{{ data }}</p>
+<h1 id="title" class="title">Login</h1>
+
+<ng-container *ngIf="config">
+  <ng-container *ngIf="config.email.enable || config.sms.enable">
+    <form [formGroup]="loginForm" (ngSubmit)="login()" class="step-container">
+      <div class="form-control-group">
+        <label *ngIf="config.email.enable && config.sms.enable" class="label" for="input-login">Username / Email / Phone
+          number</label>
+        <label *ngIf="config.email.enable && !config.sms.enable" class="label" for="input-login">Username /
+          Email</label>
+        <label *ngIf="!config.email.enable && config.sms.enable" class="label" for="input-login">Username / Phone
+          number</label>
+        <nb-form-field>
+          <nb-icon nbPrefix icon="person-outline" pack="eva"></nb-icon>
+          <input type="text" class="form-control" formControlName="login" autofocus fullWidth fieldSize="large" nbInput
+            [ngClass]="{'form-control-danger': loginForm.invalid && (loginForm.dirty || loginForm.touched)}">
+        </nb-form-field>
+      </div>
+
+      <div class="form-control-group">
+        <span class="label-with-link">
+          <label class="label" for="input-password">Password</label>
+          <a class="forgot-password caption-2" routerLink="../reset-password">Forgot Password?</a>
+        </span>
+
+        <!-- <label class="label" for="input-password">Password</label> -->
+        <nb-form-field>
+          <nb-icon nbPrefix icon="lock-outline" pack="eva"></nb-icon>
+          <input type="password" class="form-control" formControlName="password" autofocus fullWidth fieldSize="large"
+            nbInput [ngClass]="{'form-control-danger': loginForm.invalid && (loginForm.dirty || loginForm.touched)}">
+        </nb-form-field>
+      </div>
+
+      <!-- <div class="form-control-group accept-group">
+        <nb-checkbox name="rememberMe" [(ngModel)]="rememberMe">Remember me</nb-checkbox>
+      </div> -->
+
+      <button nbButton fullWidth [disabled]="loginProcessing || !loginForm.valid" [class.btn-pulse]="loginProcessing" status="primary"
+        type="submit">Login</button>
+    </form>
+  </ng-container>
+
+  
+  <section *ngIf="config.socials && config.socials.length > 0" class="links" aria-label="Social sign in">
+    or enter with:
+    <app-socials [socials]="config.socials"></app-socials>
+  </section>
+
+  <section class="another-action" aria-label="Register">
+    Don't have an account? <a class="text-link" routerLink="../register">Register</a>
+  </section>
+
+</ng-container>

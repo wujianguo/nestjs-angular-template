@@ -13,16 +13,23 @@ export class ChangePasswordRequest {
     message:
       'password should contains (uppercase letters && lowercase letters && (numbers || punctuation and special characters))',
   })
-  @ApiProperty()
+  @ApiProperty({ required: true })
   newPassword: string;
 }
 
 export class ResetPasswordRequest extends VerifyCodeRequest {
-  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  @Length(6, 20)
+  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
+    message:
+      'password should contains (uppercase letters && lowercase letters && (numbers || punctuation and special characters))',
+  })
+  @ApiProperty({ required: true })
   newPassword: string;
 }
 
 export class PasswordRequest {
-  @ApiProperty()
+  @ApiProperty({ required: true })
   password: string;
 }

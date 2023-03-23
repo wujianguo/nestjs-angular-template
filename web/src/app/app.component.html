@@ -1,5 +1,10 @@
-<h1>Home</h1>
-<a routerLink="/">Home</a>
-<br/>
-<a routerLink="/user/login">Login</a>
-<router-outlet></router-outlet>
+<nb-layout>
+
+  <nb-layout-header fixed>
+    <app-header></app-header>
+  </nb-layout-header>
+  <nb-layout-column>
+    <router-outlet></router-outlet>
+  </nb-layout-column>
+  <!-- <nb-layout-footer>Contact us</nb-layout-footer> -->
+</nb-layout>
