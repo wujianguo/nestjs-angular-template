@@ -4,7 +4,8 @@ import { ISocialAdapter, SocialAuthURLOptions, SocialUser } from '../../src/user
 export class MockAdapter implements ISocialAdapter {
   provider = 'mock';
   name: { en: string; zh: string } = { en: 'Mock', zh: 'Mock' };
-  logo: { en: string; zh: string } = { en: '', zh: '' };
+  iconURL: { en: string; zh: string } = { en: '', zh: '' };
+  iconSVG: { en: string; zh: string } = { en: '', zh: '' };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   authorizationURL(options?: SocialAuthURLOptions): string {

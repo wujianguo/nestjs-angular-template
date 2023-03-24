@@ -1,11 +1,12 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { User } from '../entities/user.entity';
-import { IsAlphanumeric, IsNotEmpty, IsString, Length } from 'class-validator';
+import { IsAlphanumeric, IsNotEmpty, IsString, Length, Matches } from 'class-validator';
 
 export class UserProfileDto {
   @IsString()
   @IsNotEmpty()
   @Length(4, 20)
+  @Matches(/^(?=.*[a-zA-Z]).+$/, { message: 'username must contain at least one alphabetical character' })
   @IsAlphanumeric('en-US', { message: 'username contains only letters and numbers' })
   @ApiProperty()
   username: string;
