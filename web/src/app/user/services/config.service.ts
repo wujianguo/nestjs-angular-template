@@ -10,7 +10,7 @@ import { AuthConfig } from '../dto/auth-config.dto';
 export class ConfigService {
   config$: BehaviorSubject<AuthConfig> = new BehaviorSubject<AuthConfig>({ email: { enable: true, domain: '' }, sms: { enable: false, prefix: '' }, socials: [] });
 
-  constructor(private http: HttpClient) {
+  constructor(private readonly http: HttpClient) {
     this.getConfig().subscribe(config => {
       this.config$.next(config);
     });

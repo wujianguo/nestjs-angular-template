@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { NbThemeService } from '@nebular/theme';
-import { map, Subject, takeUntil } from 'rxjs';
-import { UserResponseDto } from 'src/app/user/dto/user.dto';
+import { map, Observable, Subject, takeUntil } from 'rxjs';
+import { UserService } from '../../../core/services/user.service';
+import { UserResponseDto } from '../../../user/dto/user.dto';
 
 type ThemeType = 'default' | 'dark';
 
@@ -26,10 +27,11 @@ export class HeaderComponent implements OnInit {
   currentTheme = 'default';
   themeIcon = 'sun-outline';
 
-  userMenu = [ { title: 'Profile' }, { title: 'Log out' } ];
+  userMenu = [ { title: 'Profile', icon: 'person-outline', link: '/user/profile' }, { title: 'Log out', icon: 'unlock-outline', link: '/auth/logout' } ];
   user?: UserResponseDto;
+  user$?: Observable<UserResponseDto>;
 
-  constructor(private readonly themeService: NbThemeService) { }
+  constructor(private readonly themeService: NbThemeService, private readonly userService: UserService) { }
 
   ngOnInit(): void {
     this.themeService.onThemeChange()
@@ -45,6 +47,9 @@ export class HeaderComponent implements OnInit {
     if (theme && theme !== 'default') {
       this.themeService.changeTheme(theme);
     }
+    this.userService.user$.subscribe(user => {
+      this.user = user;
+    });
   }
 
   ngOnDestroy() {

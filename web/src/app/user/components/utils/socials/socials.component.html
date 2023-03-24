@@ -1,6 +1,6 @@
 <div class="socials" *ngIf="socials && socials.length > 0">
   <!-- <nb-button-group> -->
-    <button *ngFor="let socialLink of socials" nbButton ghost (click)="socialLogin(socialLink.provider)">
+    <button *ngFor="let socialLink of socials" nbButton outline ghost (click)="socialLogin(socialLink.provider)">
       <!-- {{ socialLink.name }} -->
       <!-- <div *ngIf="socialLink.iconSVG; else title"> -->
         <nb-icon *ngIf="socialLink.iconSVG; else title" [innerHTML]="bypassSecurityTrustHtml(socialLink.iconSVG)"></nb-icon>

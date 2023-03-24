@@ -84,7 +84,7 @@ export class GithubAdapter implements ISocialAdapter {
     }
     return {
       nickname: res.data.name,
-      username: res.data.name,
+      username: res.data.login,
       identifier: res.data.login,
       avatar: res.data.avatar_url,
       origin: res.data,

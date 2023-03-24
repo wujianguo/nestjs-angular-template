@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 
 import { PageComponent } from './components/page/page.component';
 import { HeaderComponent } from './components/header/header.component';
-import { NbActionsModule, NbIconModule, NbLayoutModule, NbMenuModule, NbSelectModule, NbSidebarModule, NbUserModule } from '@nebular/theme';
+import { NbActionsModule, NbButtonModule, NbContextMenuModule, NbIconModule, NbLayoutModule, NbMenuModule, NbSelectModule, NbSidebarModule, NbUserModule } from '@nebular/theme';
 
 
 @NgModule({
@@ -15,9 +15,11 @@ import { NbActionsModule, NbIconModule, NbLayoutModule, NbMenuModule, NbSelectMo
     CommonModule,
     NbLayoutModule,
     NbSidebarModule,
+    NbButtonModule,
     NbSelectModule,
     NbActionsModule,
     NbUserModule,
+    NbContextMenuModule,
     NbIconModule,
     // NbEvaIconsModule,
     NbMenuModule,

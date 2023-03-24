@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { UserResponseDto } from '../../dto/user.dto';
-import { UserService } from '../../services/user.service';
+import { UserService } from '../../../core/services/user.service';
 
 @Component({
   selector: 'app-profile',
@@ -10,13 +10,14 @@ import { UserService } from '../../services/user.service';
 })
 export class ProfileComponent implements OnInit {
 
-  user$?: Observable<UserResponseDto>;
+  user?: UserResponseDto;
 
 
   constructor(private readonly userService: UserService) { }
 
   ngOnInit(): void {
-    this.user$ = this.userService.profile();
+    this.userService.user$.subscribe(user => {
+      this.user = user;
+    });
   }
-
 }

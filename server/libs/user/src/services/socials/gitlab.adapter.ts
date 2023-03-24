@@ -107,7 +107,7 @@ export class GitlabAdapter implements ISocialAdapter {
     }
     return {
       nickname: res.data.name,
-      username: res.data.name,
+      username: res.data.username,
       identifier: res.data.username,
       avatar: res.data.avatar_url,
       origin: res.data,

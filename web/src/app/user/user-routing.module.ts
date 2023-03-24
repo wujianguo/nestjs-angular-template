@@ -6,6 +6,8 @@ import { LoginComponent } from './components/login/login.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { RegisterComponent } from './components/register/register.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
+import { ChangePasswordComponent } from './components/change-password/change-password.component';
+import { LogoutComponent } from './components/logout/logout.component';
 
 const routes: Routes = [
   {
@@ -19,15 +21,23 @@ const routes: Routes = [
       },
       {
         path: 'login',
-        component: LoginComponent
+        component: LoginComponent,
+      },
+      {
+        path: 'logout',
+        component: LogoutComponent,
       },
       {
         path: 'register',
-        component: RegisterComponent
+        component: RegisterComponent,
       },
       {
         path: 'reset-password',
-        component: ResetPasswordComponent
+        component: ResetPasswordComponent,
+      },
+      {
+        path: 'change-password',
+        component: ChangePasswordComponent,
       }
     ]
   },
@@ -37,7 +47,7 @@ const routes: Routes = [
       {
         path: 'profile',
         component: ProfileComponent,
-      }
+      },
     ]
   },
   {
@@ -81,7 +91,9 @@ export class UserRoutingModule { }
 export const routedComponents = [
   AuthComponent,
   LoginComponent,
+  LogoutComponent,
   ProfileComponent,
   RegisterComponent,
+  ChangePasswordComponent,
   ResetPasswordComponent,
 ]
