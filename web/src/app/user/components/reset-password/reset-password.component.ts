@@ -66,7 +66,7 @@ export class ResetPasswordComponent {
       this.authService.requestPassword('email', { email: recipient }).subscribe(res => {
         this.sendProcessing = false;
         if (res.isSuccess()) {
-          this.codeToken = res.getToken().getValue();
+          this.codeToken = res.getResponse().body.token;
           this.stepper.next();
         }
       });
@@ -78,7 +78,7 @@ export class ResetPasswordComponent {
         this.authService.requestPassword('sms', { phoneNumber }).subscribe(res => {
           this.sendProcessing = false;
           if (res.isSuccess()) {
-            this.codeToken = res.getToken().getValue();
+            this.codeToken = res.getResponse().body.token;
             this.stepper.next();
           }
         });

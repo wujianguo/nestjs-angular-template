@@ -31,13 +31,14 @@ export class AuthController {
   @Get('config')
   @ApiOperation({ summary: 'Get user auth config' })
   @ApiOkResponse({ description: 'User auth config', type: AuthConfig })
-  getConfig(): AuthConfig {
+  getConfig(@Req() req: Request): AuthConfig {
+    const userAgent = req.headers['user-agent']?.substring(0, 256) || '';
     const conf = new AuthConfig();
     conf.email = { enable: this.config.email.enable, domain: this.config.email.domain || '' };
     // conf.email.enable = false;
     conf.sms = { enable: this.config.sms.enable, prefix: this.config.sms.prefix || '+86' };
     // conf.sms = { enable: false, prefix: '+86' };
-    conf.socials = this.socialService.getPublicSocialAuthConfig();
+    conf.socials = this.socialService.getPublicSocialAuthConfig(userAgent);
     return conf;
   }
 

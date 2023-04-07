@@ -51,7 +51,6 @@ export class EmailAuthStrategy extends NbPasswordAuthStrategy {
   request(module: string, data: any): Observable<NbAuthResult> {
     const method = this.getOption(`${module}.method`);
     const url = this.getActionEndpoint(module);
-    const requireValidToken = this.getOption(`${module}.requireValidToken`);
     return this.http.request(method, url, { body: data, observe: 'response', headers: this.getHeaders() }).pipe(
       map((res) => {
         if (this.getOption(`${module}.alwaysFail`)) {
@@ -63,7 +62,7 @@ export class EmailAuthStrategy extends NbPasswordAuthStrategy {
       map((res) => {
         let redirect = undefined;
         if (this.getOption(`${module}.redirect.success`)) {
-          redirect = this.getOption(`${module}.redirect.success`).replace('${token}', this.getOption('token.getter')(module, res, this.options));
+          redirect = this.getOption(`${module}.redirect.success`);
         }
         return new NbAuthResult(
           true,
@@ -71,7 +70,7 @@ export class EmailAuthStrategy extends NbPasswordAuthStrategy {
           redirect,
           [],
           this.getOption('messages.getter')(module, res, this.options),
-          this.createToken(this.getOption('token.getter')(module, res, this.options), requireValidToken),
+          undefined,
         );
       }),
       catchError((res) => {

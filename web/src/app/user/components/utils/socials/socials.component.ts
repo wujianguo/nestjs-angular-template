@@ -21,7 +21,6 @@ export class SocialsComponent implements OnInit {
     return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 
-
   socialLogin(provider: string): void {
     this.authService.getAuthURL('social', provider, 'signup').subscribe(res => {
       if (res.isSuccess()) {

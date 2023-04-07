@@ -1,0 +1,72 @@
+<h1 id="title" class="title">Register</h1>
+
+<form [formGroup]="completeForm" (ngSubmit)="completeRegister()" class="step-container">
+  <div class="form-control-group">
+    <label class="label" for="input-username">Username</label>
+    <input 
+      type="text" 
+      placeholder="Username" 
+      class="form-control" 
+      formControlName="username"
+      required
+      autofocus 
+      fullWidth
+      fieldSize="large" 
+      nbInput 
+      [ngClass]="{'form-control-danger': completeForm.invalid && (completeForm.dirty || completeForm.touched)}"
+    >
+  </div>
+
+  <div class="fullname">
+    <div class="form-control-group firstname">
+      <label class="label" for="input-username">First name</label>
+      <input 
+        type="text" 
+        placeholder="First name" 
+        class="form-control" 
+        formControlName="firstName"
+        fieldSize="large" 
+        fullWidth
+        nbInput 
+        [ngClass]="{'form-control-danger': completeForm.invalid && (completeForm.dirty || completeForm.touched)}"
+      >
+    </div>
+
+    <div class="form-control-group lastname">
+      <label class="label" for="input-username">Last name</label>
+      <input 
+        type="text" 
+        placeholder="Last name" 
+        class="form-control" 
+        formControlName="lastName"
+        fieldSize="large"
+        fullWidth
+        nbInput 
+        [ngClass]="{'form-control-danger': completeForm.invalid && (completeForm.dirty || completeForm.touched)}"
+      >
+    </div>
+
+  </div>
+
+  <div class="form-control-group">
+    <label class="label" for="input-password">Password</label>
+    <input 
+      type="password" 
+      placeholder="Password" 
+      class="form-control" 
+      formControlName="password"
+      required
+      fullWidth
+      fieldSize="large" 
+      nbInput 
+      [ngClass]="{'form-control-danger': completeForm.invalid && (completeForm.dirty || completeForm.touched)}"
+    >
+  </div>
+
+  <button nbButton fullWidth [disabled]="registerProcessing || !completeForm.valid" [class.btn-pulse]="registerProcessing" status="primary" type="submit">Register</button>
+</form>
+
+<section class="sign-in-or-up" aria-label="Sign in or sign up">
+  <p><a class="text-link" routerLink="../../../login">Back to Log In</a></p>
+  <p><a class="text-link" routerLink="../../../register">Register</a></p>
+</section>

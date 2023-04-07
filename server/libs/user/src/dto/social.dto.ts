@@ -2,10 +2,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { SocialAuthConfig } from './auth-config.dto';
 import { AuthenticatedUserResponse } from './user.dto';
 
-export enum SocialAuthType {
-  Signup = 'signup',
-  Connect = 'connect',
-}
+// export enum SocialAuthType {
+//   Auth = 'auth',
+//   Connect = 'connect',
+// }
 
 export class SocialAuthURL {
   @ApiProperty({ format: 'url' })
@@ -16,8 +16,19 @@ export class SocialAuthCode {
   @ApiProperty()
   code: string;
 
+  @ApiProperty({ required: false })
+  state?: string;
+}
+
+class SuggestUserResponse {
   @ApiProperty()
-  state: string;
+  username: string;
+
+  @ApiProperty()
+  firstName: string;
+
+  @ApiProperty()
+  lastName: string;
 }
 
 export class SocialAuthResponse {
@@ -32,6 +43,12 @@ export class SocialAuthResponse {
     description: 'Use this token to create new user.',
   })
   signupToken: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'Suggest user for signup.',
+  })
+  suggestUser: SuggestUserResponse;
 }
 
 class SocialUser {

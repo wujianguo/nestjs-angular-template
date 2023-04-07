@@ -93,7 +93,7 @@ export class SocialService {
     }
   }
 
-  getPublicSocialAuthConfig(language: 'en' | 'zh' = 'en'): SocialAuthConfig[] {
+  getPublicSocialAuthConfig(userAgent: string, language: 'en' | 'zh' = 'en'): SocialAuthConfig[] {
     const ret = Object.keys(this.adapters).map((key) => {
       const conf = new SocialAuthConfig();
       conf.provider = this.adapters[key].provider;
@@ -106,7 +106,7 @@ export class SocialService {
         conf.iconURL = this.adapters[key].iconURL.zh;
         conf.iconSVG = this.adapters[key].iconSVG.zh;
       }
-      // conf.authURL = this.adapters[key].authorizationURL();
+      conf.authURL = this.adapters[key].authorizationURL({ userAgent });
       return conf;
     });
     return ret;

@@ -3,6 +3,7 @@ import { Injectable } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { NbAuthResult, NbAuthStrategyClass, NbPasswordAuthStrategy, NbPasswordAuthStrategyOptions, NbPasswordStrategyModule } from "@nebular/auth"
 import { catchError, map, Observable } from "rxjs";
+import { SocialAuthResponse } from "../dto/social.dto";
 
 export class SocialAuthStrategyOptions extends NbPasswordAuthStrategyOptions {
   getAuthURL?: boolean | NbPasswordStrategyModule = {
@@ -50,9 +51,11 @@ export class SocialAuthStrategy extends NbPasswordAuthStrategy {
 
   request(module: string, data: any): Observable<NbAuthResult> {
     const method = this.getOption(`${module}.method`);
-    const url = this.getActionEndpoint(module);
+    const provider = data.provider;
+    data.provider = undefined;
+    const url = this.getActionEndpoint(module).replace('{provider}', provider);
     const requireValidToken = this.getOption(`${module}.requireValidToken`);
-    return this.http.request(method, url, { body: data, observe: 'response', headers: this.getHeaders() }).pipe(
+    return this.http.request<SocialAuthResponse>(method, url, { body: data, observe: 'response', headers: this.getHeaders() }).pipe(
       map((res) => {
         if (this.getOption(`${module}.alwaysFail`)) {
           throw this.createFailResponse(data);
@@ -63,7 +66,11 @@ export class SocialAuthStrategy extends NbPasswordAuthStrategy {
       map((res) => {
         let redirect = undefined;
         if (this.getOption(`${module}.redirect.success`)) {
-          redirect = this.getOption(`${module}.redirect.success`).replace('${token}', this.getOption('token.getter')(module, res, this.options));
+          redirect = this.getOption(`${module}.redirect.success`);
+        }
+        let token = undefined;
+        if (res.body?.user) {
+          token = this.createToken(res.body?.user?.token, requireValidToken);
         }
         return new NbAuthResult(
           true,
@@ -71,7 +78,7 @@ export class SocialAuthStrategy extends NbPasswordAuthStrategy {
           redirect,
           [],
           this.getOption('messages.getter')(module, res, this.options),
-          this.createToken(this.getOption('token.getter')(module, res, this.options), requireValidToken),
+          token,
         );
       }),
       catchError((res) => {
@@ -99,8 +106,8 @@ export class SocialAuthStrategy extends NbPasswordAuthStrategy {
       }),
     );
   }
-
-  authorize(code: string, state?: string): Observable<NbAuthResult> {
-    return this.request('authorize', { code, state });
+  
+  override authenticate(data?: any): Observable<NbAuthResult> {
+    return this.request('authorize', data);
   }
 }

@@ -57,6 +57,11 @@ export class RegisterComponent {
     this.config$.subscribe(config => {
       this.config = config;
     });
+    this.authService.isAuthenticated().subscribe(isAuthenticated => {
+      if (isAuthenticated) {
+        this.router.navigateByUrl('/');
+      }
+    });
   }
 
   isEmail(recipient: string): boolean {
@@ -75,7 +80,7 @@ export class RegisterComponent {
       this.authService.sendRegisterEmail('email', { email: recipient }).subscribe(res => {
         this.sendProcessing = false;
         if (res.isSuccess()) {
-          this.codeToken = res.getToken().getValue();
+          this.codeToken = res.getResponse().body.token;
           this.stepper.next();
         }
       });
@@ -87,7 +92,7 @@ export class RegisterComponent {
         this.authService.sendRegisterSms('sms', { phoneNumber }).subscribe(res => {
           this.sendProcessing = false;
           if (res.isSuccess()) {
-            this.codeToken = res.getToken().getValue();
+            this.codeToken = res.getResponse().body.token;
             this.stepper.next();
           }
         });
@@ -102,7 +107,7 @@ export class RegisterComponent {
       this.authService.verifyRegisterEmail('email', { code, token: this.codeToken }).subscribe(res => {
         this.verifyProcessing = false;
         if (res.isSuccess()) {
-          this.signupToken = res.getToken().getValue();
+          this.signupToken = res.getResponse().body.token;
           this.stepper.next();
           this.completeForm.patchValue({ username: this.recipient.indexOf('@') > 0 ? this.recipient.split('@')[0] : '' });
         }
@@ -112,7 +117,7 @@ export class RegisterComponent {
       this.authService.verifyRegisterSms('sms', { code, token: this.codeToken }).subscribe(res => {
         this.verifyProcessing = false;
         if (res.isSuccess()) {
-          this.signupToken = res.getToken().getValue();
+          this.signupToken = res.getResponse().body.token;
           this.stepper.next();
         }
       });

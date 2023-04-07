@@ -9,8 +9,8 @@ import {
   Ip,
   Req,
   Delete,
-  Query,
-  ParseEnumPipe,
+  // Query,
+  // ParseEnumPipe,
 } from '@nestjs/common';
 import { Request } from 'express';
 import {
@@ -20,15 +20,15 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
-  ApiQuery,
-  ApiResponse,
+  // ApiQuery,
+  // ApiResponse,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import {
   SocialAuthCode,
   SocialAuthResponse,
-  SocialAuthType,
+  // SocialAuthType,
   SocialAuthURL,
   SocialConnectionResponse,
 } from '../dto/social.dto';
@@ -56,19 +56,25 @@ export class SocialController {
   @ApiOperation({ summary: 'Get my social connections.' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @ApiOkResponse({ description: 'Social connections', type: [SocialConnectionResponse] })
-  async socialConnections(@GetAuthContext() context: AuthContext): Promise<SocialConnectionResponse[]> {
+  async socialConnections(
+    @Req() req: Request,
+    @GetAuthContext() context: AuthContext,
+  ): Promise<SocialConnectionResponse[]> {
+    const userAgent = req.headers['user-agent']?.substring(0, 256) || '';
     const socialAccounts = await this.usersService.findSocialConnections(context.user);
-    const socials = this.socialService.getPublicSocialAuthConfig();
+    const socials = this.socialService.getPublicSocialAuthConfig(userAgent);
     return socials.map((data) => {
       const accounts = socialAccounts.filter((item) => {
         return item.provider === data.provider;
       });
       const account = accounts.length > 0 ? accounts[0] : null;
+      const authURL = this.socialService.authorizationURL(data.provider, userAgent);
       return {
         provider: data.provider,
         name: data.name,
         iconSVG: data.iconSVG,
         iconURL: data.iconURL,
+        authURL: authURL,
         connected: account ? true : false,
         socialUser: account
           ? { nickname: account.nickname, avatar: account.avatar, createTime: account.createTime }
@@ -80,15 +86,15 @@ export class SocialController {
   @Get(':provider/url')
   @ApiOperation({ summary: 'Get social auth URL.' })
   @ApiParam({ name: 'provider' })
-  @ApiQuery({ name: 'type', enum: SocialAuthType })
-  @ApiResponse({ status: 302, description: 'Social auth URL' })
+  // @ApiQuery({ name: 'type', enum: SocialAuthType })
+  // @ApiResponse({ status: 302, description: 'Social auth URL' })
   authURL(
     @Req() req: Request,
     @Param('provider') provider: string,
-    @Query('type', new ParseEnumPipe(SocialAuthType)) type: SocialAuthType,
+    // @Query('type', new ParseEnumPipe(SocialAuthType)) type: SocialAuthType,
   ): SocialAuthURL {
     const userAgent = req.headers['user-agent']?.substring(0, 256) || '';
-    const url = this.socialService.authorizationURL(provider, userAgent, type);
+    const url = this.socialService.authorizationURL(provider, userAgent);
     return { url: url };
   }
 
@@ -120,6 +126,7 @@ export class SocialController {
     } else {
       const token = await this.signupService.createSignupToken(`#${socialUser.identifier}`, provider, socialUser);
       ret.signupToken = token;
+      ret.suggestUser = { username: socialUser.username, firstName: socialUser.nickname, lastName: '' };
     }
     return ret;
   }

@@ -50,8 +50,13 @@ import { SocialsComponent } from './components/utils/socials/socials.component';
         SocialAuthStrategy.setup({
           name: 'social',
           baseEndpoint: environment.api,
+          token: {
+            getter: (module: string, res: any, options: any) => {
+              return res.body.user?.token;
+            }
+          },
           getAuthURL: { endpoint: '/auth/social/{provider}/url' },
-          authorize: { endpoint: '/auth/social/{provider}/authorize' },
+          authorize: { endpoint: '/auth/social/{provider}/auth', redirect: { success: '/user/profile' } },
         }),
         NbPasswordAuthStrategy.setup({
           name: 'auth',

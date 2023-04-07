@@ -18,6 +18,8 @@ export interface SocialAuthConfig {
   iconSVG: string;
 
   iconURL: string;
+
+  authURL: string;
 }
 
 export interface AuthConfig {

@@ -61,7 +61,7 @@ export class FeishuAdapter implements ISocialAdapter {
       const payload: { [key: string]: string } = {};
       payload['app_id'] = this.appId;
       payload['app_secret'] = this.appSecret;
-      const headers = { 'Content-Type': 'application/json; charset=utf-8' };
+      const headers = { 'Content-Type': 'application/json; charset=utf-8', 'Accept-Encoding': 'gzip,deflate,compress' };
       tokenResp = await firstValueFrom(
         this.httpService.post<FeishuAppToken>(this.appTokenURL, payload, { headers: headers }),
       );
@@ -81,6 +81,7 @@ export class FeishuAdapter implements ISocialAdapter {
       const headers = {
         Authorization: `Bearer ${tokenResp.data.app_access_token}`,
         'Content-Type': 'application/json; charset=utf-8',
+        'Accept-Encoding': 'gzip,deflate,compress',
       };
       res = await firstValueFrom(this.httpService.post<FeishuUser>(this.tokenURL, payload, { headers: headers }));
     } catch (error) {

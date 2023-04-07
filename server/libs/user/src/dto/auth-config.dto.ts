@@ -37,6 +37,9 @@ export class SocialAuthConfig {
 
   @ApiProperty()
   iconSVG: string;
+
+  @ApiProperty()
+  authURL: string;
 }
 
 export class AuthConfig {

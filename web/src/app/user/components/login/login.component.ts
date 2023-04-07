@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -27,6 +27,11 @@ export class LoginComponent {
     this.config$ = this.configService.config$;
     this.config$.subscribe(config => {
       this.config = config;
+    });
+    this.authService.isAuthenticated().subscribe(isAuthenticated => {
+      if (isAuthenticated) {
+        this.router.navigateByUrl('/');
+      }
     });
   }
 

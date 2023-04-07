@@ -7,6 +7,7 @@ import { ProfileComponent } from './components/profile/profile.component';
 import { RegisterComponent } from './components/register/register.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
+import { SocialRedirectComponent } from './components/social-redirect/social-redirect.component';
 import { LogoutComponent } from './components/logout/logout.component';
 
 const routes: Routes = [
@@ -30,6 +31,10 @@ const routes: Routes = [
       {
         path: 'register',
         component: RegisterComponent,
+      },
+      {
+        path: 'social/:provider/redirect',
+        component: SocialRedirectComponent,
       },
       {
         path: 'reset-password',
@@ -94,6 +99,7 @@ export const routedComponents = [
   LogoutComponent,
   ProfileComponent,
   RegisterComponent,
+  SocialRedirectComponent,
   ChangePasswordComponent,
   ResetPasswordComponent,
 ]

@@ -5,7 +5,7 @@ import { AuthenticatedUserResponse, UpdateUserRequest } from '../../src/dto/user
 import { LoginRequest } from '../../src/dto/login.dto';
 import { ChangePasswordRequest, PasswordRequest, ResetPasswordRequest } from '../../src/dto/password.dto';
 import { AppContext } from './app';
-import { SocialAuthCode, SocialAuthType } from '../../src/dto/social.dto';
+import { SocialAuthCode } from '../../src/dto/social.dto';
 
 export class UserClient {
   private context: AppContext;
@@ -153,8 +153,8 @@ export class UserClient {
     return this.post('auth/password/reset/complete', {}, body);
   }
 
-  socialAuthURL(provider: string, type: SocialAuthType) {
-    return this.get(`auth/social/${provider}/url`, { type });
+  socialAuthURL(provider: string) {
+    return this.get(`auth/social/${provider}/url`);
   }
 
   socialAuth(provider: string, body: SocialAuthCode) {
